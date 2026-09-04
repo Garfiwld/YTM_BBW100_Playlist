@@ -226,6 +226,12 @@ def create_playlist(title, description, video_ids):
     return pid
 
 
+def write_charts_index():
+    """charts/index.json -- sorted list of every chart date on disk, for the dashboard."""
+    dates = sorted(f[:-5] for f in os.listdir(CHARTS_DIR) if f.endswith(".json") and f != "index.json")
+    save_json(os.path.join(CHARTS_DIR, "index.json"), dates)
+
+
 def playlist_url(pid):
     return f"https://music.youtube.com/playlist?list={pid}"
 
@@ -278,11 +284,14 @@ def main():
         save_json(CACHE, cache)
         with open(UNMATCHED, "w") as f:
             f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
+        weak = {ln.split("\t")[1] for ln in still_unmatched}
         for row in chart["data"]:
-            vid = cache.get(f"{row['song']}|{row['artist']}")
-            if vid:
-                row["videoId"] = vid
+            k = f"{row['song']}|{row['artist']}"
+            if cache.get(k):
+                row["videoId"] = cache[k]
+            row["weak"] = k in weak
         save_json(os.path.join(CHARTS_DIR, f"{date}.json"), chart)
+        write_charts_index()
         write_playlists_md(config)
 
     def quota_stop(where):

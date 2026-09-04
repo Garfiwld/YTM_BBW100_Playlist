@@ -13,7 +13,7 @@ import json
 import os
 import urllib.request
 
-from sync import CHARTS_DIR, save_json
+from sync import CHARTS_DIR, save_json, write_charts_index
 
 ALL_URL = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/main/all.json"
 
@@ -42,7 +42,8 @@ def main():
         save_json(path, chart)
         written += 1
 
-    print(f"wrote {written}, skipped {skipped} existing")
+    write_charts_index()
+    print(f"wrote {written}, skipped {skipped} existing; refreshed charts/index.json")
 
 
 if __name__ == "__main__":

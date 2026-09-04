@@ -3,114 +3,135 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hot 100 → YT Music — review</title>
+<title>Hot 100 → YT Music</title>
 <style>
   :root {
-    --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #e2e2e2;
-    --card: #f7f7f7; --accent: #c4302b; --ok: #1a7f37;
+    --bg:#fff; --fg:#1a1a1a; --muted:#666; --line:#e2e2e2;
+    --card:#f7f7f7; --accent:#c4302b; --warn:#b26a00;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #16181c; --fg: #e8e8e8; --muted: #9aa0a6; --line: #2c2f36;
-      --card: #1e2127; --accent: #ff5b57; --ok: #4ac26b;
+      --bg:#16181c; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2f36;
+      --card:#1e2127; --accent:#ff5b57; --warn:#e0a044;
     }
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; padding: 1.5rem; background: var(--bg); color: var(--fg);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    margin:0; padding:1.5rem; background:var(--bg); color:var(--fg);
+    font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   }
-  h1 { font-size: 1.3rem; margin: 0 0 .3rem; }
-  a { color: var(--accent); }
-  .meta { color: var(--muted); margin-bottom: 1.2rem; }
-  .meta a { color: var(--accent); }
-  .hint {
-    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
-    padding: .8rem 1rem; margin-bottom: 1.2rem; font-size: 13.5px; color: var(--muted);
-  }
-  code { background: var(--line); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
-  .row {
-    display: grid; grid-template-columns: 120px 1fr; gap: 1rem;
-    padding: 1rem 0; border-top: 1px solid var(--line); align-items: start;
-  }
-  .row img { width: 120px; height: 90px; object-fit: cover; border-radius: 6px; background: var(--card); }
-  .song { font-weight: 600; }
-  .artist { color: var(--muted); }
-  .rank { color: var(--muted); font-size: 13px; }
-  .links { margin-top: .4rem; display: flex; flex-wrap: wrap; gap: .35rem .8rem; font-size: 13.5px; }
-  .key { margin-top: .35rem; font-size: 12.5px; color: var(--muted); word-break: break-all; }
-  .empty { color: var(--ok); font-weight: 600; }
-  .err { color: var(--accent); }
+  h1 { font-size:1.25rem; margin:0 0 .5rem; }
+  a { color:var(--accent); }
+  .bar { display:flex; flex-wrap:wrap; gap:.6rem 1rem; align-items:center; margin-bottom:1rem; }
+  select { font:inherit; padding:.3rem .5rem; background:var(--card); color:var(--fg);
+           border:1px solid var(--line); border-radius:6px; }
+  .meta { color:var(--muted); font-size:13.5px; }
+  .hint { background:var(--card); border:1px solid var(--line); border-radius:8px;
+          padding:.7rem 1rem; margin-bottom:1rem; font-size:13px; color:var(--muted); }
+  code { background:var(--line); padding:.1em .35em; border-radius:4px; font-size:.9em; }
+  .row { display:grid; grid-template-columns:2.5rem 84px 1fr; gap:.9rem;
+         padding:.7rem 0; border-top:1px solid var(--line); align-items:start; }
+  .rank { font-weight:700; font-size:1.05rem; text-align:right; }
+  .move { font-size:11px; color:var(--muted); font-weight:400; }
+  .thumb { width:84px; height:63px; object-fit:cover; border-radius:5px; background:var(--card); display:block; }
+  .novid { width:84px; height:63px; border-radius:5px; background:var(--card);
+           display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:11px; }
+  .song { font-weight:600; }
+  .artist { color:var(--muted); }
+  .sub { font-size:12.5px; color:var(--muted); margin-top:.15rem; }
+  .links { margin-top:.35rem; display:flex; flex-wrap:wrap; gap:.3rem .8rem; font-size:13px; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; color:var(--warn);
+           border:1px solid var(--warn); border-radius:4px; padding:0 .3em; margin-left:.4rem; }
+  #list.only-weak .row:not(.weak) { display:none; }
 </style>
 </head>
 <body>
-<h1>Weak matches to review</h1>
-<div class="meta" id="meta">loading…</div>
-<div class="hint">
-  These songs were added to the playlist from the <em>top</em> YouTube result, but its
-  title didn't clearly match. To fix one: open the YT&nbsp;Music search, copy the correct
-  video id, set it in <code>cache.json</code> under the shown key, delete that line from
-  <code>unmatched.txt</code>, and commit. Next sync swaps it in.
+<h1>Billboard Hot 100 → YouTube Music</h1>
+<div class="bar">
+  <label>Week <select id="week"></select></label>
+  <label><input type="checkbox" id="onlyweak"> weak only</label>
+  <span class="meta" id="meta"></span>
+</div>
+<div class="hint" id="hint" hidden>
+  <b class="badge">WEAK</b> = added from the top result but its title didn't clearly
+  match. Fix: get the right id from the search link, set it in <code>cache.json</code>
+  under <code>song|artist</code>, delete that line from <code>unmatched.txt</code>, commit.
 </div>
 <div id="list">loading…</div>
 
 <script>
-const yt = id => `https://www.youtube.com/watch?v=${id}`;
-const ytm = id => `https://music.youtube.com/watch?v=${id}`;
-const search = q => `https://music.youtube.com/search?q=${encodeURIComponent(q)}`;
-const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const yt   = id => `https://www.youtube.com/watch?v=${id}`;
+const ytm  = id => `https://music.youtube.com/watch?v=${id}`;
+const srch = q  => `https://music.youtube.com/search?q=${encodeURIComponent(q)}`;
+const esc  = s  => (s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-async function tryJson(path) {
-  try { const r = await fetch(path, {cache: 'no-store'}); return r.ok ? await r.json() : null; }
-  catch { return null; }
+async function j(path) {
+  const r = await fetch(path, {cache: 'no-store'});
+  if (!r.ok) throw new Error(path + ' ' + r.status);
+  return r.json();
 }
 
-(async () => {
-  const meta = document.getElementById('meta');
-  const list = document.getElementById('list');
+const weekSel = document.getElementById('week');
+const listEl  = document.getElementById('list');
+const metaEl  = document.getElementById('meta');
 
-  const config = await tryJson('config.json') || {};
-  let unmatchedTxt = '';
-  try { const r = await fetch('unmatched.txt', {cache: 'no-store'}); unmatchedTxt = r.ok ? await r.text() : ''; }
-  catch { list.innerHTML = '<p class="err">could not load unmatched.txt</p>'; return; }
+function move(row) {
+  const lw = row.last_week, tw = row.this_week;
+  if (!lw) return '<span class="move">NEW</span>';
+  if (lw === tw) return '<span class="move">—</span>';
+  const d = lw - tw;
+  return `<span class="move">${d > 0 ? '▲' + d : '▼' + (-d)}</span>`;
+}
 
-  const rows = unmatchedTxt.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
-    const [date, key, videoId] = l.split('\t');
-    const [song, artist] = (key || '').split('|');
-    return { date, key, videoId, song, artist };
-  });
-
-  const rolling = config.rolling_playlist_id
-    ? `<a href="https://music.youtube.com/playlist?list=${config.rolling_playlist_id}">rolling playlist</a>` : '';
-  meta.innerHTML =
-    `${rows.length} weak match${rows.length === 1 ? '' : 'es'}` +
-    (config.last_synced_date ? ` · chart week ${config.last_synced_date}` : '') +
-    (rolling ? ` · ${rolling}` : '') +
-    ` · <a href="PLAYLISTS.md">all playlists</a>`;
-
-  if (!rows.length) { list.innerHTML = '<p class="empty">Nothing to review 🎉</p>'; return; }
-
-  // latest chart for rank lookup (best-effort)
-  const latest = rows.map(r => r.date).sort().pop();
-  const chart = latest ? await tryJson(`charts/${latest}.json`) : null;
-  const rankOf = {};
-  if (chart && chart.data) for (const e of chart.data) rankOf[`${e.song}|${e.artist}`] = e.this_week;
-
-  list.innerHTML = rows.map(r => `
-    <div class="row">
-      <a href="${yt(r.videoId)}"><img loading="lazy" src="https://i.ytimg.com/vi/${r.videoId}/mqdefault.jpg" alt=""></a>
+function render(chart) {
+  const rows = [...chart.data].sort((a, b) => a.this_week - b.this_week);
+  const weak = rows.filter(r => r.weak).length;
+  const matched = rows.filter(r => r.videoId).length;
+  metaEl.textContent = `${rows.length} songs · ${matched} matched · ${weak} weak`;
+  document.getElementById('hint').hidden = !weak;
+  listEl.innerHTML = rows.map(r => {
+    const q = `${r.song} ${r.artist}`;
+    const art = r.videoId
+      ? `<a href="${yt(r.videoId)}"><img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/${r.videoId}/mqdefault.jpg" alt=""></a>`
+      : `<div class="novid">no match</div>`;
+    const links = r.videoId
+      ? `<a href="${ytm(r.videoId)}">▶ YT Music</a><a href="${yt(r.videoId)}">▶ YouTube</a><a href="${srch(q)}">🔎 search</a>`
+      : `<a href="${srch(q)}">🔎 search</a>`;
+    return `<div class="row ${r.weak ? 'weak' : ''}">
+      <div class="rank">${r.this_week}${move(r)}</div>
+      ${art}
       <div>
-        <div><span class="song">${esc(r.song || '?')}</span> — <span class="artist">${esc(r.artist || '?')}</span></div>
-        <div class="rank">${rankOf[r.key] ? '#' + rankOf[r.key] + ' this week' : ''} · flagged ${esc(r.date || '')}</div>
-        <div class="links">
-          <a href="${search((r.song || '') + ' ' + (r.artist || ''))}">🔎 YT Music search</a>
-          <a href="${ytm(r.videoId)}">▶ chosen (YT Music)</a>
-          <a href="${yt(r.videoId)}">▶ chosen (YouTube)</a>
-        </div>
-        <div class="key">cache.json key: <code>${esc(r.key || '')}</code> — current id <code>${esc(r.videoId || '')}</code></div>
+        <div><span class="song">${esc(r.song)}</span> — <span class="artist">${esc(r.artist)}</span>${r.weak ? '<span class="badge">WEAK</span>' : ''}</div>
+        <div class="sub">peak #${r.peak_position} · ${r.weeks_on_chart} wk${r.weeks_on_chart === 1 ? '' : 's'}${r.videoId ? ' · <code>' + esc(r.song) + '|' + esc(r.artist) + '</code>' : ''}</div>
+        <div class="links">${links}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('onlyweak').addEventListener('change', e => {
+  listEl.classList.toggle('only-weak', e.target.checked);
+});
+
+(async () => {
+  let dates;
+  try { dates = await j('charts/index.json'); }
+  catch { listEl.innerHTML = '<p>No <code>charts/index.json</code> yet — run sync or backfill_charts.py.</p>'; return; }
+  dates.sort().reverse();
+  weekSel.innerHTML = dates.map(d => `<option>${d}</option>`).join('');
+  const want = new URLSearchParams(location.search).get('date');
+  if (want && dates.includes(want)) weekSel.value = want;
+
+  async function load() {
+    listEl.textContent = 'loading…';
+    try { render(await j(`charts/${weekSel.value}.json`)); }
+    catch (e) { listEl.innerHTML = `<p>could not load ${esc(weekSel.value)}: ${esc(e.message)}</p>`; }
+  }
+  weekSel.addEventListener('change', () => {
+    history.replaceState(null, '', `?date=${weekSel.value}`);
+    load();
+  });
+  load();
 })();
 </script>
 </body>
