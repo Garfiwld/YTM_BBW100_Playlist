@@ -7,8 +7,9 @@ into YouTube Music:
 - **Monthly archive** `Billboard Hot 100 - YYYY-MM-DD` — public, one snapshot per calendar month.
 
 Chart data comes from [`mhollingshead/billboard-hot-100`](https://github.com/mhollingshead/billboard-hot-100)
-(`recent.json`), not scraped. Each run also saves that week's raw chart to
-`charts/YYYY-MM-DD.json` and commits it, so the repo keeps its own chart history.
+(`recent.json`), not scraped. Each run saves that week's chart to
+`charts/YYYY-MM-DD.json` (with the resolved `videoId` added to each entry once
+matched) and commits it, so the repo keeps its own chart + match history.
 
 `sync.py` talks to the **YouTube Data API v3** directly over OAuth — no `ytmusicapi`
 at runtime (its InnerTube endpoints reject OAuth Bearer tokens with HTTP 400).

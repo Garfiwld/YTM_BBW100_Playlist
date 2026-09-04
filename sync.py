@@ -25,7 +25,8 @@ Env / .env:
   YTM_OAUTH_FILE                     token json (default ./oauth.json), needs refresh_token
 
 State files (committed back by CI):
-  charts/<date>.json -> the raw Billboard chart for that week, as fetched.
+  charts/<date>.json -> the week's Billboard chart; each entry gets a "videoId"
+                        added once matched (backfilled weeks have chart data only).
   PLAYLISTS.md   -> human-readable list of every playlist URL, regenerated each run.
   config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD",
                      "last_archived_month": "YYYY-MM",
@@ -307,6 +308,11 @@ def main():
         save_json(CACHE, cache)
         with open(UNMATCHED, "w") as f:
             f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
+        for row in chart["data"]:
+            vid = cache.get(f"{row['song']}|{row['artist']}")
+            if vid:
+                row["videoId"] = vid
+        save_json(os.path.join(CHARTS_DIR, f"{date}.json"), chart)
         write_playlists_md(config)
 
     def quota_stop(where):
