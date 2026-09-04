@@ -25,6 +25,7 @@ Env / .env:
   YTM_OAUTH_FILE                     token json (default ./oauth.json), needs refresh_token
 
 State files (committed back by CI):
+  charts/<date>.json -> the raw Billboard chart for that week, as fetched.
   config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD",
                      "last_archived_month": "YYYY-MM"}
   cache.json     -> {"song|artist": "videoId"}   resolved matches, reused across weeks
@@ -50,6 +51,7 @@ ROLLING_NAME = "Billboard Hot 100"
 FUZZY_THRESHOLD = 0.6
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+CHARTS_DIR = os.path.join(HERE, "charts")
 CONFIG = os.path.join(HERE, "config.json")
 CACHE = os.path.join(HERE, "cache.json")
 UNMATCHED = os.path.join(HERE, "unmatched.txt")
@@ -258,6 +260,9 @@ def main():
         chart = json.load(resp)
     date = chart["date"]
     entries = sorted(chart["data"], key=lambda d: d["this_week"])[:100]
+
+    os.makedirs(CHARTS_DIR, exist_ok=True)
+    save_json(os.path.join(CHARTS_DIR, f"{date}.json"), chart)
 
     config = load_json(CONFIG, {})
     if config.get("last_synced_date") == date:
