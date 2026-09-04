@@ -16,9 +16,11 @@ only after a full clean pass; the monthly archive snapshot likewise only fires o
 a complete run. Holdovers are not reordered unless FULL_REORDER=1 (wipe + refill).
 
 Matching: one search.list call per uncached song, restricted to the Music category
-(videoCategoryId=10). Top result wins; if its title contains the song name or
-clears FUZZY_THRESHOLD it's a clean match, otherwise it's still added but logged to
-unmatched.txt for review. No music result at all -> the song is skipped.
+(videoCategoryId=10). Among the results, pick the best title match, tie-breaking
+toward the audio 'song' (a "- Topic" channel / "Official Audio" title) rather than
+the music video -- set PREFER_MV=1 to flip that. A pick whose title contains the
+song name or clears FUZZY_THRESHOLD is clean; otherwise it's still added but logged
+to unmatched.txt. No music result at all -> the song is skipped.
 
 Quota: two separate daily caps -- 10k units/day AND a hard 100 search.list
 calls/day. One call per uncached song, so a cold first run gets through ~100
@@ -187,14 +189,38 @@ def well_matched(title, song):
     return (ns and ns in nt) or ratio(title, song) >= FUZZY_THRESHOLD
 
 
+_MV_RE = re.compile(r"official (music )?video|\bm/?v\b|music video", re.I)
+_AUDIO_RE = re.compile(r"official audio|\baudio\b|lyric|visuali[sz]er", re.I)
+
+
+def kind_score(item):
+    """+1 per signal that the result is an audio 'song', -1 per music-video signal.
+    Flip with PREFER_MV=1."""
+    sn = item.get("snippet", {})
+    title, ch = sn.get("title", ""), sn.get("channelTitle", "")
+    s = 0
+    if ch.strip().lower().endswith("- topic"):
+        s += 2
+    if _AUDIO_RE.search(title):
+        s += 1
+    if _MV_RE.search(title):
+        s -= 1
+    return -s if os.environ.get("PREFER_MV") else s
+
+
 def match(song, artist):
-    """One search.list call. Take the top result. Weak (not well_matched) picks are
-    still added to the playlist but logged to unmatched.txt for a human to check."""
-    for it in yt_search(f"{song} {artist}"):
-        vid = it.get("id", {}).get("videoId")
-        if vid:
-            return vid, well_matched(it.get("snippet", {}).get("title", ""), song)
-    return None, False
+    """One search.list call. Among the results, pick the best-matching title,
+    breaking ties toward an audio 'song' (or the MV if PREFER_MV=1). Weak picks
+    (not well_matched) are still added but logged to unmatched.txt for review."""
+    cands = [it for it in yt_search(f"{song} {artist}") if it.get("id", {}).get("videoId")]
+    if not cands:
+        return None, False
+    best = max(cands, key=lambda it: (
+        well_matched(it.get("snippet", {}).get("title", ""), song),
+        kind_score(it),
+        -cands.index(it),
+    ))
+    return best["id"]["videoId"], well_matched(best.get("snippet", {}).get("title", ""), song)
 
 
 def playlist_items(pid):

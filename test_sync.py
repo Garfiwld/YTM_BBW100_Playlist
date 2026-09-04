@@ -13,15 +13,25 @@ assert sync.well_matched("Billie Eilish - BIRDS OF A FEATHER (Official Audio)", 
 assert sync.well_matched("Die With a Smile", "Die With A Smile")
 assert not sync.well_matched("totally unrelated reaction video", "Some Song")
 
-# match(): one search call, first result with a videoId, well/weak per well_matched
+# match(): among well-matched results, prefer the audio 'song' over the MV
 sync.yt_search = lambda q: [
-    {"id": {}, "snippet": {"title": "no id here"}},
-    {"id": {"videoId": "vT"}, "snippet": {"title": "Billie Eilish - Birds Of A Feather (Official Music Video)"}},
+    {"id": {"videoId": "mv"}, "snippet": {"title": "Billie Eilish - BIRDS OF A FEATHER (Official Music Video)", "channelTitle": "BillieEilishVEVO"}},
+    {"id": {"videoId": "aud"}, "snippet": {"title": "BIRDS OF A FEATHER", "channelTitle": "Billie Eilish - Topic"}},
 ]
-assert sync.match("Birds of a Feather", "Billie Eilish") == ("vT", True)
+assert sync.match("Birds of a Feather", "Billie Eilish") == ("aud", True)
 
-sync.yt_search = lambda q: [{"id": {"videoId": "vW"}, "snippet": {"title": "totally different clip"}}]
-assert sync.match("Some Song", "Some Artist") == ("vW", False)  # weak, still returned
+import os as _o
+_o.environ["PREFER_MV"] = "1"
+assert sync.match("Birds of a Feather", "Billie Eilish") == ("mv", True)
+del _o.environ["PREFER_MV"]
+
+# no result -> skip
+sync.yt_search = lambda q: []
+assert sync.match("x", "y") == (None, False)
+
+# only a weak result -> still returned, flagged weak
+sync.yt_search = lambda q: [{"id": {"videoId": "vW"}, "snippet": {"title": "totally different clip", "channelTitle": "rando"}}]
+assert sync.match("Some Song", "Some Artist") == ("vW", False)
 
 sync.yt_search = lambda q: []
 assert sync.match("x", "y") == (None, False)

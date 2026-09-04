@@ -21,9 +21,12 @@ Runtime is Python stdlib only.
 ## How matching works
 
 For each uncached song — **one** `search.list` call, `q="song artist"`, restricted
-to the **Music category** (`videoCategoryId=10`) — take the top result:
+to the **Music category** (`videoCategoryId=10`). Among the (≤5) results, pick the
+best title match, tie-breaking toward the **audio "song"** (a `… - Topic` channel or
+an *Official Audio* title) over the **music video**. `PREFER_MV=1 python3 sync.py`
+flips the preference. Then:
 
-1. Its title contains the song name, or fuzzy-matches it (ratio ≥ 0.8) → clean match.
+1. Pick's title contains the song name, or fuzzy-matches it (ratio ≥ 0.8) → clean match.
 2. Neither → still added to the playlist, but logged to `unmatched.txt` for a
    human to check and fix later.
 3. No music result at all → skipped and logged; the playlist is just shorter that week.
