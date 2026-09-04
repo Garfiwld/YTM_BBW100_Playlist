@@ -23,40 +23,44 @@ For each of the 100 songs:
 
 ## One-time setup
 
-### 1. Browser auth
+### 1. Google OAuth client
 
-OAuth does not work: YouTube returns HTTP 400 on `search` for OAuth tokens
-(ytmusicapi 1.12.x), so this uses browser auth.
+1. [Google Cloud Console](https://console.cloud.google.com/) → new project.
+2. APIs & Services → Enable **YouTube Data API v3**.
+3. OAuth consent screen → External → add the Google account that will own the
+   playlists as a **Test user**.
+4. Credentials → Create credentials → OAuth client ID → type **TVs and Limited Input devices**.
+5. Note the **Client ID** and **Client secret**.
+
+### 2. Generate the token
 
 ```bash
 pip install -r requirements.txt
-ytmusicapi browser
+ytmusicapi oauth --client-id YOUR_ID --client-secret YOUR_SECRET
 ```
 
-Follow the prompt: open <https://music.youtube.com> logged into the account that
-should own the playlists → DevTools → Network → copy the request headers of any
-`/youtubei/v1/...` POST → paste. Produces `browser.json`.
+Follow the device-code prompt while logged into the account that should own the playlists.
+Produces `oauth.json`.
 
-Those cookies last for months, but die if you sign that Google session out
-elsewhere — re-run `ytmusicapi browser` and refresh the secret if sync starts
-failing with 401.
-
-### 2. Run once locally to bootstrap
+### 3. Run once locally to bootstrap
 
 ```bash
-python sync.py
+cp .env.example .env      # then edit .env with your client id/secret
+python sync.py            # sync.py auto-loads .env
 ```
 
 First run creates the rolling playlist and writes its id into `config.json`. Commit
 `config.json`, `cache.json`, `unmatched.txt`.
 
-### 3. GitHub Actions
+### 4. GitHub Actions
 
-Repo → Settings → Secrets and variables → Actions → **New repository secret**:
+Repo → Settings → Secrets and variables → Actions:
 
 | Secret | Value |
 |---|---|
-| `YTM_BROWSER_JSON` | full contents of `browser.json` |
+| `YTM_OAUTH_JSON` | full contents of `oauth.json` |
+| `YTM_CLIENT_ID` | OAuth client id |
+| `YTM_CLIENT_SECRET` | OAuth client secret |
 
 The workflow runs every Wednesday 20:00 Asia/Bangkok (`0 13 * * 3` UTC) and on manual
 dispatch. It commits the updated state files back to the repo. If the chart date in
