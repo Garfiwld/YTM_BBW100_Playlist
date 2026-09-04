@@ -104,3 +104,10 @@ Commits the updated state files back. If `recent.json`'s `date` hasn't changed s
 ```bash
 python3 test_sync.py
 ```
+
+## Later
+
+- **Backfill** — `sync.py` only handles the current chart. Historical archive
+  playlists (iterate `date/YYYY-MM-DD.json` in `mhollingshead/billboard-hot-100`,
+  newest → oldest) are not built yet. ~5,000 quota units per archive, so any
+  backfill has to be paced across days.
