@@ -26,6 +26,9 @@ import urllib.parse
 HERE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(HERE, "ytm_search.db")
 SEARCH_XHR = "/youtubei/v1/search"
+# YT Music blocks the stock Playwright UA ("browser not supported"); pose as desktop Chrome.
+UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+      "Chrome/126.0.0.0 Safari/537.36")
 
 
 def find_all(node, key):
@@ -115,8 +118,11 @@ def main():
         UNIQUE(query, filter, videoId))""")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=not args.headful)
-        page = browser.new_page()
+        browser = p.chromium.launch(
+            headless=not args.headful,
+            args=["--disable-blink-features=AutomationControlled"])
+        page = browser.new_context(user_agent=UA, locale="en-US",
+                                   viewport={"width": 1280, "height": 900}).new_page()
         for q in queries:
             for filt in filters:
                 try:
