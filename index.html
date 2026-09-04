@@ -149,7 +149,8 @@ function render() {
   const rows = [...chart.data].sort((a, b) => a.this_week - b.this_week);
   const weak = rows.filter(r => r.weak).length;
   const matched = rows.filter(r => r.videoId).length;
-  metaEl.textContent = `${rows.length} songs · ${matched} matched · ${weak} weak`;
+  metaEl.innerHTML = `${rows.length} songs · ${matched} matched · ${weak} weak · ` +
+    `<a href="https://lite.datasette.io/?url=${location.origin}${location.pathname.replace(/[^/]*$/, '')}matches.db" target="_blank" rel="noopener">SQL</a>`;
   document.getElementById('hint').hidden = !weak && staged.size === 0;
 
   listEl.innerHTML = rows.map((r, idx) => {

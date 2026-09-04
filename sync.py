@@ -41,8 +41,9 @@ State files (committed back by CI):
   cache.json     -> {"song|artist": {"videoId": chosen, "audio": id|null, "mv": id|null}}
                     the working match store, reused across weeks (a bare id string
                     is still accepted for back-compat)
-  matches.csv    -> song,artist,videoId,audio,mv  -- the same data as a flat table,
-                    regenerated from cache.json each run
+  matches.csv    -> song,artist,videoId,audio,mv  -- the same data as a flat table
+  matches.db     -> ditto as a SQLite table `matches` (SQL via lite.datasette.io)
+                    both regenerated from cache.json each run
   unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (top hit's title
                     didn't fuzzy-match). Kept from cache like anything else;
                     RETRY_WEAK=1 re-searches them (costs search calls).
@@ -52,6 +53,7 @@ import csv
 import difflib
 import json
 import os
+import sqlite3
 import re
 import sys
 import time
@@ -68,6 +70,7 @@ FUZZY_THRESHOLD = 0.8
 HERE = os.path.dirname(os.path.abspath(__file__))
 CHARTS_DIR = os.path.join(HERE, "charts")
 MATCHES_CSV = os.path.join(HERE, "matches.csv")
+MATCHES_DB = os.path.join(HERE, "matches.db")
 CONFIG = os.path.join(HERE, "config.json")
 CACHE = os.path.join(HERE, "cache.json")
 UNMATCHED = os.path.join(HERE, "unmatched.txt")
@@ -277,18 +280,35 @@ def create_playlist(title, description, video_ids):
     return pid
 
 
-def write_matches_csv(cache):
-    """cache.json as a flat table: song,artist,videoId,audio,mv (sorted)."""
+def _match_rows(cache):
     rows = []
     for key, v in cache.items():
         song, _, artist = key.partition("|")
         e = cache_entry(v)
         rows.append((song, artist, e["videoId"] or "", e["audio"] or "", e["mv"] or ""))
     rows.sort(key=lambda r: (r[1].lower(), r[0].lower()))
+    return rows
+
+
+def write_matches_csv(cache):
+    """cache.json as a flat table: song,artist,videoId,audio,mv (sorted)."""
     with open(MATCHES_CSV, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["song", "artist", "videoId", "audio", "mv"])
-        w.writerows(rows)
+        w.writerows(_match_rows(cache))
+
+
+def write_matches_db(cache):
+    """Same table as a SQLite file -- queryable with SQL (e.g. via lite.datasette.io)."""
+    tmp = MATCHES_DB + ".tmp"
+    if os.path.exists(tmp):
+        os.remove(tmp)
+    con = sqlite3.connect(tmp)
+    con.execute("CREATE TABLE matches (song TEXT, artist TEXT, videoId TEXT, audio TEXT, mv TEXT)")
+    con.executemany("INSERT INTO matches VALUES (?,?,?,?,?)", _match_rows(cache))
+    con.commit()
+    con.close()
+    os.replace(tmp, MATCHES_DB)
 
 
 def write_charts_index():
@@ -348,6 +368,7 @@ def main():
         save_json(CONFIG, config)
         save_json(CACHE, cache)
         write_matches_csv(cache)
+        write_matches_db(cache)
         with open(UNMATCHED, "w") as f:
             f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
         weak = {ln.split("\t")[1] for ln in still_unmatched}

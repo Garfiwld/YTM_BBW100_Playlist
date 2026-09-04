@@ -48,6 +48,14 @@ lines = open(sync.MATCHES_CSV).read().splitlines()
 assert lines[0] == "song,artist,videoId,audio,mv"
 assert lines[1] == "Song A,Artist A,a,," and lines[2] == "Song Z,Artist B,z,z,"
 
+# write_matches_db: same rows queryable via SQL
+import sqlite3 as _sq
+sync.MATCHES_DB = _os2.path.join(_tf.mkdtemp(), "m.db")
+sync.write_matches_db({"S|A": {"videoId": "v", "audio": "v", "mv": "w"}})
+con = _sq.connect(sync.MATCHES_DB)
+assert con.execute("SELECT song,artist,mv FROM matches").fetchall() == [("S", "A", "w")]
+con.close()
+
 sync.yt_search = lambda q: []
 assert sync.match("x", "y") == (None, False)
 

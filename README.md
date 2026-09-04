@@ -33,8 +33,10 @@ The dashboard shows both with a *use* button to switch. Then:
    human to check and fix later.
 3. No music result at all → skipped and logged; the playlist is just shorter that week.
 
-`matches.csv` (`song,artist,videoId,audio,mv`) is regenerated from `cache.json`
-every run — a flat table for spreadsheets or loading into a real DB.
+`matches.csv` and `matches.db` (a SQLite table `matches`, columns
+`song,artist,videoId,audio,mv`) are regenerated from `cache.json` every run.
+Run SQL against the DB in the browser, no install, via datasette-lite:
+`https://lite.datasette.io/?url=https://garfiwld.github.io/YTM_BBW100_Playlist/matches.db`
 
 `cache.json` remembers resolved `song|artist → videoId`; a cached song is **never
 re-searched**, including weak matches in `unmatched.txt`. To force weak entries to
