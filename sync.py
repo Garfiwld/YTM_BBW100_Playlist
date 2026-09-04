@@ -7,15 +7,23 @@ Auth: OAuth 2.0 refresh-token flow against the YouTube Data API v3 (no ytmusicap
 
 Needs a Google OAuth client (type "TVs and Limited Input devices") and a token
 minted with `ytmusicapi oauth` (or any device flow for scope
-https://www.googleapis.com/auth/youtube). Quota: this burns well past the default
-10k units/day on the first run -- request an increase first.
+https://www.googleapis.com/auth/youtube).
+
+Quota (default 10k units/day; search.list=100, every playlist write=50):
+  - weekly: diff the rolling playlist (remove drops, insert new entries at their
+    rank position) -- only the churn, ~4k units. Holdovers are NOT reordered.
+  - monthly: also snapshot an archive playlist (~5k units).
+  - FULL_REORDER=1 forces a wipe+refill of the rolling playlist (~10k units) to
+    re-sort holdovers exactly; run it by hand on a quiet day.
+  - first run does ~15-20k units -- split it across 2 days, it resumes from cache.json.
 
 Env / .env:
   YTM_CLIENT_ID, YTM_CLIENT_SECRET   the OAuth client
   YTM_OAUTH_FILE                     token json (default ./oauth.json), needs refresh_token
 
 State files (committed back by CI):
-  config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD"}
+  config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD",
+                     "last_archived_month": "YYYY-MM"}
   cache.json     -> {"song|artist": "videoId"}   resolved matches, reused across weeks
   unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (not Music category);
                     retried every run.
@@ -174,17 +182,41 @@ def match(song, artist):
     return (vid, False) if vid else (None, False)
 
 
-def playlist_item_ids(pid):
-    ids, page = [], None
+def playlist_items(pid):
+    """[(playlistItemId, videoId), ...] in playlist order."""
+    out, page = [], None
     while True:
-        params = {"part": "id", "playlistId": pid, "maxResults": "50"}
+        params = {"part": "snippet", "playlistId": pid, "maxResults": "50"}
         if page:
             params["pageToken"] = page
         resp = api("GET", "playlistItems", params)
-        ids += [it["id"] for it in resp.get("items", [])]
+        for it in resp.get("items", []):
+            out.append((it["id"], it["snippet"]["resourceId"].get("videoId")))
         page = resp.get("nextPageToken")
         if not page:
-            return ids
+            return out
+
+
+def diff_rolling(pid, desired):
+    """Remove items not in `desired` (and duplicates); insert missing ones at their
+    rank position. Does not reorder holdovers."""
+    current = playlist_items(pid)
+    seen, removed = set(), 0
+    for item_id, vid in current:
+        if vid not in desired or vid in seen:
+            api("DELETE", "playlistItems", {"id": item_id})
+            removed += 1
+        else:
+            seen.add(vid)
+    added = 0
+    for i, vid in enumerate(desired):
+        if vid not in seen:
+            api("POST", "playlistItems", {"part": "snippet"}, {
+                "snippet": {"playlistId": pid, "position": i,
+                            "resourceId": {"kind": "youtube#video", "videoId": vid}},
+            })
+            added += 1
+    return added, removed
 
 
 def add_items(pid, video_ids):
@@ -260,17 +292,24 @@ def main():
         pid = create_playlist(ROLLING_NAME, desc, ordered)
         config["rolling_playlist_id"] = pid
         print(f"Created rolling playlist {pid}")
-    else:
-        old = playlist_item_ids(pid)
-        add_items(pid, ordered)
-        for item_id in old:
+    elif os.environ.get("FULL_REORDER"):
+        for item_id, _ in playlist_items(pid):
             api("DELETE", "playlistItems", {"id": item_id})
-        api("PUT", "playlists", {"part": "snippet"},
-            {"id": pid, "snippet": {"title": ROLLING_NAME, "description": desc}})
-        print(f"Updated rolling playlist {pid} ({len(ordered)} tracks)")
+        add_items(pid, ordered)
+        print(f"Rebuilt rolling playlist {pid} ({len(ordered)} tracks, full reorder)")
+    else:
+        added, removed = diff_rolling(pid, ordered)
+        print(f"Diffed rolling playlist {pid}: +{added} -{removed}")
+    api("PUT", "playlists", {"part": "snippet"},
+        {"id": pid, "snippet": {"title": ROLLING_NAME, "description": desc}})
 
-    archive = create_playlist(f"{ROLLING_NAME} - {date}", desc, ordered)
-    print(f"Created archive playlist {archive}")
+    month = date[:7]
+    if config.get("last_archived_month") != month:
+        archive = create_playlist(f"{ROLLING_NAME} - {date}", desc, ordered)
+        config["last_archived_month"] = month
+        print(f"Created archive playlist {archive}")
+    else:
+        print(f"Archive for {month} already done; skipping.")
 
     config["last_synced_date"] = date
     save_json(CONFIG, config)

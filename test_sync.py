@@ -15,4 +15,31 @@ assert pick(items, "Birds of a Feather", check_title=True) == "b"
 assert pick(items, "Birds of a Feather", check_title=False) == "a"
 assert pick([{"id": {}, "snippet": {"title": "x"}}], "x", check_title=False) is None
 
+# diff_rolling: remove drops + dupes, insert missing at rank position
+import sync
+
+calls = []
+sync._token["value"] = "x"  # skip token refresh
+
+
+def fake_api(method, path, params=None, body=None):
+    calls.append((method, path, params, body))
+    if method == "GET":  # current playlist: A, B, B(dup), OLD
+        return {"items": [
+            {"id": "i1", "snippet": {"resourceId": {"videoId": "A"}}},
+            {"id": "i2", "snippet": {"resourceId": {"videoId": "B"}}},
+            {"id": "i3", "snippet": {"resourceId": {"videoId": "B"}}},
+            {"id": "i4", "snippet": {"resourceId": {"videoId": "OLD"}}},
+        ]}
+    return {}
+
+
+sync.api = fake_api
+added, removed = sync.diff_rolling("pl", ["NEW", "A", "B"])
+assert (added, removed) == (1, 2), (added, removed)
+deletes = {c[2]["id"] for c in calls if c[0] == "DELETE"}
+assert deletes == {"i3", "i4"}, deletes
+ins = [c for c in calls if c[0] == "POST"]
+assert len(ins) == 1 and ins[0][3]["snippet"]["position"] == 0  # NEW at rank 0
+
 print("ok")

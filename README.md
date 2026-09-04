@@ -3,8 +3,8 @@
 Weekly job that mirrors the [Billboard Hot 100](https://www.billboard.com/charts/hot-100/)
 into YouTube Music:
 
-- **Rolling playlist** `Billboard Hot 100` — public, wiped and refilled each week in chart order.
-- **Weekly archive** `Billboard Hot 100 - YYYY-MM-DD` — public, one new playlist per chart week.
+- **Rolling playlist** `Billboard Hot 100` — public, diffed each week toward the current chart.
+- **Monthly archive** `Billboard Hot 100 - YYYY-MM-DD` — public, one snapshot per calendar month.
 
 Chart data comes from [`mhollingshead/billboard-hot-100`](https://github.com/mhollingshead/billboard-hot-100)
 (`recent.json`), not scraped.
@@ -28,14 +28,19 @@ For each of the 100 songs:
 
 ## Quota
 
-YouTube Data API v3 default free quota is **10,000 units/day**. `search.list` costs
-100, every playlist write costs 50. The first (bootstrap) run does ~100 searches +
-~200 writes ≈ 20,000 units; a normal week with a warm cache still runs ~15,000.
+YouTube Data API v3 free quota is **10,000 units/day**. `search.list` = 100 units,
+every playlist write = 50. To stay inside it:
 
-**Request a quota increase before the first run:** Google Cloud Console → APIs &
-Services → YouTube Data API v3 → Quotas → select the queries-per-day quota → Edit →
-request e.g. 1,000,000/day. Approval takes a few days. Until then, run the bootstrap
-across two days (it resumes from `cache.json`).
+- **Weekly**: the rolling playlist is *diffed* — remove chart drops, insert new
+  entries at their rank position, holdovers left where they are. Only the churn
+  (~15 songs each way) plus searches for genuinely new titles ≈ 4,000 units.
+- **Monthly**: the first sync of a new calendar month also snapshots an archive
+  playlist (`last_archived_month` in `config.json` gates it) ≈ 5,000 units.
+- **`FULL_REORDER=1 python3 sync.py`**: wipes and refills the rolling playlist so
+  holdovers are re-sorted into exact rank order (~10,000 units). Run by hand on a
+  day the scheduled job isn't also archiving.
+- **First run** ≈ 15,000–20,000 units. If you hit `quotaExceeded`, just run it
+  again the next day — it resumes from `cache.json`.
 
 ## One-time setup
 
