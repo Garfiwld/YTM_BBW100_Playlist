@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hot 100 → YT Music — review</title>
+<style>
+  :root {
+    --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #e2e2e2;
+    --card: #f7f7f7; --accent: #c4302b; --ok: #1a7f37;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c; --fg: #e8e8e8; --muted: #9aa0a6; --line: #2c2f36;
+      --card: #1e2127; --accent: #ff5b57; --ok: #4ac26b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 1.5rem; background: var(--bg); color: var(--fg);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  h1 { font-size: 1.3rem; margin: 0 0 .3rem; }
+  a { color: var(--accent); }
+  .meta { color: var(--muted); margin-bottom: 1.2rem; }
+  .meta a { color: var(--accent); }
+  .hint {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+    padding: .8rem 1rem; margin-bottom: 1.2rem; font-size: 13.5px; color: var(--muted);
+  }
+  code { background: var(--line); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+  .row {
+    display: grid; grid-template-columns: 120px 1fr; gap: 1rem;
+    padding: 1rem 0; border-top: 1px solid var(--line); align-items: start;
+  }
+  .row img { width: 120px; height: 90px; object-fit: cover; border-radius: 6px; background: var(--card); }
+  .song { font-weight: 600; }
+  .artist { color: var(--muted); }
+  .rank { color: var(--muted); font-size: 13px; }
+  .links { margin-top: .4rem; display: flex; flex-wrap: wrap; gap: .35rem .8rem; font-size: 13.5px; }
+  .key { margin-top: .35rem; font-size: 12.5px; color: var(--muted); word-break: break-all; }
+  .empty { color: var(--ok); font-weight: 600; }
+  .err { color: var(--accent); }
+</style>
+</head>
+<body>
+<h1>Weak matches to review</h1>
+<div class="meta" id="meta">loading…</div>
+<div class="hint">
+  These songs were added to the playlist from the <em>top</em> YouTube result, but its
+  title didn't clearly match. To fix one: open the YT&nbsp;Music search, copy the correct
+  video id, set it in <code>cache.json</code> under the shown key, delete that line from
+  <code>unmatched.txt</code>, and commit. Next sync swaps it in.
+</div>
+<div id="list">loading…</div>
+
+<script>
+const yt = id => `https://www.youtube.com/watch?v=${id}`;
+const ytm = id => `https://music.youtube.com/watch?v=${id}`;
+const search = q => `https://music.youtube.com/search?q=${encodeURIComponent(q)}`;
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function tryJson(path) {
+  try { const r = await fetch(path, {cache: 'no-store'}); return r.ok ? await r.json() : null; }
+  catch { return null; }
+}
+
+(async () => {
+  const meta = document.getElementById('meta');
+  const list = document.getElementById('list');
+
+  const config = await tryJson('config.json') || {};
+  let unmatchedTxt = '';
+  try { const r = await fetch('unmatched.txt', {cache: 'no-store'}); unmatchedTxt = r.ok ? await r.text() : ''; }
+  catch { list.innerHTML = '<p class="err">could not load unmatched.txt</p>'; return; }
+
+  const rows = unmatchedTxt.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const [date, key, videoId] = l.split('\t');
+    const [song, artist] = (key || '').split('|');
+    return { date, key, videoId, song, artist };
+  });
+
+  const rolling = config.rolling_playlist_id
+    ? `<a href="https://music.youtube.com/playlist?list=${config.rolling_playlist_id}">rolling playlist</a>` : '';
+  meta.innerHTML =
+    `${rows.length} weak match${rows.length === 1 ? '' : 'es'}` +
+    (config.last_synced_date ? ` · chart week ${config.last_synced_date}` : '') +
+    (rolling ? ` · ${rolling}` : '') +
+    ` · <a href="PLAYLISTS.md">all playlists</a>`;
+
+  if (!rows.length) { list.innerHTML = '<p class="empty">Nothing to review 🎉</p>'; return; }
+
+  // latest chart for rank lookup (best-effort)
+  const latest = rows.map(r => r.date).sort().pop();
+  const chart = latest ? await tryJson(`charts/${latest}.json`) : null;
+  const rankOf = {};
+  if (chart && chart.data) for (const e of chart.data) rankOf[`${e.song}|${e.artist}`] = e.this_week;
+
+  list.innerHTML = rows.map(r => `
+    <div class="row">
+      <a href="${yt(r.videoId)}"><img loading="lazy" src="https://i.ytimg.com/vi/${r.videoId}/mqdefault.jpg" alt=""></a>
+      <div>
+        <div><span class="song">${esc(r.song || '?')}</span> — <span class="artist">${esc(r.artist || '?')}</span></div>
+        <div class="rank">${rankOf[r.key] ? '#' + rankOf[r.key] + ' this week' : ''} · flagged ${esc(r.date || '')}</div>
+        <div class="links">
+          <a href="${search((r.song || '') + ' ' + (r.artist || ''))}">🔎 YT Music search</a>
+          <a href="${ytm(r.videoId)}">▶ chosen (YT Music)</a>
+          <a href="${yt(r.videoId)}">▶ chosen (YouTube)</a>
+        </div>
+        <div class="key">cache.json key: <code>${esc(r.key || '')}</code> — current id <code>${esc(r.videoId || '')}</code></div>
+      </div>
+    </div>
+  `).join('');
+})();
+</script>
+</body>
+</html>

@@ -107,6 +107,21 @@ Runs every Wednesday 20:00 Asia/Bangkok (`0 13 * * 3` UTC) and on manual dispatc
 Commits the updated state files back. If `recent.json`'s `date` hasn't changed since
 `last_synced_date`, the run is a no-op.
 
+## Review dashboard
+
+`index.html` is a static, dependency-free page that lists the weak matches from
+`unmatched.txt` with thumbnails, the chosen video, and a YT Music search link for
+each — so you can spot and fix wrong picks.
+
+Enable it: repo → Settings → Pages → Source **Deploy from a branch**, branch
+`master` / folder `/ (root)`. It must be root, not `/docs`, so the page can
+`fetch` `unmatched.txt`, `config.json`, and `charts/*.json`. Then open
+`https://garfiwld.github.io/YTM_BBW100_Playlist/`.
+
+To fix a pick: grab the right video id from the search link, set it in
+`cache.json` under the shown key, delete that song's line from `unmatched.txt`,
+commit. The next sync swaps it into the playlists.
+
 ## Tests
 
 ```bash
