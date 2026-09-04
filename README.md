@@ -22,9 +22,11 @@ Runtime is Python stdlib only.
 
 For each uncached song — **one** `search.list` call, `q="song artist"`, restricted
 to the **Music category** (`videoCategoryId=10`). Among the (≤5) results, pick the
-best title match, tie-breaking toward **Audio** (a `… - Topic` channel or an
-*Official Audio* title) over the **Music Video**. `PREFER_MV=1 python3 sync.py`
-flips the preference. Then:
+best title match. **Both** the best Audio id (a `… - Topic` channel / *Official
+Audio* title) and the best Music Video id are kept in `cache.json` and each
+`charts/*.json` row (`audio` / `mv` fields). `videoId` — the one actually put in
+the playlist — is the Audio by default, or the MV under `PREFER_MV=1 python3 sync.py`.
+The dashboard shows both with a *use* button to switch. Then:
 
 1. Pick's title contains the song name, or fuzzy-matches it (ratio ≥ 0.8) → clean match.
 2. Neither → still added to the playlist, but logged to `unmatched.txt` for a

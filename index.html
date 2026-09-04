@@ -170,25 +170,32 @@ function render() {
         <div class="links">
           <a href="${srch(q)}">🔎 search</a>
           ${cur ? `<a href="${ytm(cur)}">▶ YT Music</a>` : ''}
+          ${r.audio ? `<a href="${ytm(r.audio)}">▶ Audio</a>${r.audio !== cur ? ` <button type="button" class="use" data-key="${esc(key)}" data-id="${r.audio}">use</button>` : ''}` : ''}
+          ${r.mv ? `<a href="${yt(r.mv)}">▶ MV</a>${r.mv !== cur ? ` <button type="button" class="use" data-key="${esc(key)}" data-id="${r.mv}">use</button>` : ''}` : ''}
           <input type="text" class="vid" value="${esc(cur)}" placeholder="videoId or URL" data-key="${esc(key)}">
         </div>
       </div>
     </div>`;
   }).join('');
 
+  const stage = (key, val) => {
+    const orig = (chart.data.find(d => `${d.song}|${d.artist}` === key) || {}).videoId || '';
+    if (val && val !== orig) staged.set(key, val); else staged.delete(key);
+    refreshSaveBar();
+    render();
+  };
+
   listEl.querySelectorAll('input.vid').forEach(inp => {
     inp.addEventListener('change', () => {
-      const key = inp.dataset.key;
-      const orig = (chart.data.find(d => `${d.song}|${d.artist}` === key) || {}).videoId || '';
       const raw = inp.value.trim();
       const val = videoIdOf(raw);
       if (raw && !val) { inp.setCustomValidity('not a videoId or YouTube URL'); inp.reportValidity(); return; }
       inp.setCustomValidity('');
-      if (val && val !== orig) staged.set(key, val);
-      else staged.delete(key);
-      refreshSaveBar();
-      render();
+      stage(inp.dataset.key, val);
     });
+  });
+  listEl.querySelectorAll('button.use').forEach(b => {
+    b.addEventListener('click', () => stage(b.dataset.key, b.dataset.id));
   });
 }
 
@@ -232,7 +239,9 @@ document.getElementById('commit').onclick = async () => {
     const cache = JSON.parse(cacheF.text);
     const chartObj = JSON.parse(chartF.text);
     for (const [key, vid] of staged) {
-      cache[key] = vid;
+      const prev = cache[key];
+      const keep = (typeof prev === 'object' && prev) ? prev : {};
+      cache[key] = {videoId: vid, audio: keep.audio ?? null, mv: keep.mv ?? null};
       const row = chartObj.data.find(d => `${d.song}|${d.artist}` === key);
       if (row) { row.videoId = vid; row.weak = false; }
     }

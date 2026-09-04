@@ -38,7 +38,9 @@ State files (committed back by CI):
   config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD",
                      "last_archived_month": "YYYY-MM",
                      "archives": {"YYYY-MM-DD": playlist_id}}
-  cache.json     -> {"song|artist": "videoId"}   resolved matches, reused across weeks
+  cache.json     -> {"song|artist": {"videoId": chosen, "audio": id|null, "mv": id|null}}
+                    resolved matches, reused across weeks (a bare id string is
+                    still accepted for back-compat)
   unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (top hit's title
                     didn't fuzzy-match). Kept from cache like anything else;
                     RETRY_WEAK=1 re-searches them (costs search calls).
@@ -172,12 +174,21 @@ def yt_search(query):
     }).get("items", [])
 
 
+def cache_entry(v):
+    """Normalise a cache value to {"videoId","audio","mv"}. Old caches stored a
+    bare id string."""
+    if isinstance(v, str):
+        return {"videoId": v, "audio": None, "mv": None}
+    return {"videoId": v.get("videoId"), "audio": v.get("audio"), "mv": v.get("mv")}
+
+
 def resolve(key, song, artist, cache, prev_unmatched, retry_weak):
-    """(videoId, well_matched). Returns straight from cache without any network
-    call unless the song is uncached (or it's a weak match and retry_weak is set)."""
+    """(entry, well_matched) where entry is {"videoId","audio","mv"}. Returns
+    straight from cache without any network call unless the song is uncached (or
+    it's a weak match and retry_weak is set)."""
     weak_cached = key in prev_unmatched
     if key in cache and not (weak_cached and retry_weak):
-        return cache[key], not weak_cached
+        return cache_entry(cache[key]), not weak_cached
     return match(song, artist)
 
 
@@ -193,9 +204,8 @@ _MV_RE = re.compile(r"official (music )?video|\bm/?v\b|music video", re.I)
 _AUDIO_RE = re.compile(r"official audio|\baudio\b|lyric|visuali[sz]er", re.I)
 
 
-def kind_score(item):
-    """+ per signal that the result is Audio (a track), - per Music-Video signal.
-    Flip with PREFER_MV=1."""
+def raw_kind(item):
+    """> 0 => looks like Audio (a track), < 0 => looks like a Music Video."""
     sn = item.get("snippet", {})
     title, ch = sn.get("title", ""), sn.get("channelTitle", "")
     s = 0
@@ -205,22 +215,30 @@ def kind_score(item):
         s += 1
     if _MV_RE.search(title):
         s -= 1
-    return -s if os.environ.get("PREFER_MV") else s
+    return s
 
 
 def match(song, artist):
-    """One search.list call. Among the results, pick the best-matching title,
-    breaking ties toward Audio (or the MV if PREFER_MV=1). Weak picks
-    (not well_matched) are still added but logged to unmatched.txt for review."""
+    """One search.list call. Return ({"videoId","audio","mv"}, well_matched) --
+    keeps both the best Audio and the best Music Video result when present.
+    videoId is the chosen one: Audio by default, the MV if PREFER_MV=1. Weak picks
+    (not well_matched) are still used but logged to unmatched.txt for review."""
     cands = [it for it in yt_search(f"{song} {artist}") if it.get("id", {}).get("videoId")]
     if not cands:
         return None, False
-    best = max(cands, key=lambda it: (
-        well_matched(it.get("snippet", {}).get("title", ""), song),
-        kind_score(it),
-        -cands.index(it),
-    ))
-    return best["id"]["videoId"], well_matched(best.get("snippet", {}).get("title", ""), song)
+
+    def wm(it):
+        return well_matched(it.get("snippet", {}).get("title", ""), song)
+
+    pool = [it for it in cands if wm(it)] or cands
+    audio = max((it for it in pool if raw_kind(it) > 0),
+               key=lambda it: (raw_kind(it), -cands.index(it)), default=None)
+    mv = max((it for it in pool if raw_kind(it) < 0),
+             key=lambda it: (-raw_kind(it), -cands.index(it)), default=None)
+    order = [mv, audio] if os.environ.get("PREFER_MV") else [audio, mv]
+    chosen = next((x for x in order if x), pool[0])
+    vid = lambda it: it["id"]["videoId"] if it else None
+    return {"videoId": vid(chosen), "audio": vid(audio), "mv": vid(mv)}, wm(chosen)
 
 
 def playlist_items(pid):
@@ -317,7 +335,10 @@ def main():
         for row in chart["data"]:
             k = f"{row['song']}|{row['artist']}"
             if cache.get(k):
-                row["videoId"] = cache[k]
+                e = cache_entry(cache[k])
+                row["videoId"] = e["videoId"]
+                row["audio"] = e["audio"]
+                row["mv"] = e["mv"]
             row["weak"] = k in weak
         save_json(os.path.join(CHARTS_DIR, f"{date}.json"), chart)
         write_charts_index()
@@ -355,12 +376,13 @@ def main():
         song, artist = e["song"], e["artist"]
         key = f"{song}|{artist}"
         try:
-            vid, well = resolve(key, song, artist, cache, prev_unmatched, retry_weak)
+            entry, well = resolve(key, song, artist, cache, prev_unmatched, retry_weak)
+            vid = entry["videoId"] if entry else None
             if not vid:
                 skipped.append(key)
                 print(f"SKIP  #{e['this_week']:>3} {key}")
                 continue
-            cache[key] = vid
+            cache[key] = entry
             if not well:
                 still_unmatched.append(f"{date}\t{key}\t{vid}")
                 print(f"WEAK  #{e['this_week']:>3} {key} -> {vid} (weak title match)")

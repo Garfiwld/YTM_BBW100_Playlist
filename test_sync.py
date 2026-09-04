@@ -13,25 +13,29 @@ assert sync.well_matched("Billie Eilish - BIRDS OF A FEATHER (Official Audio)", 
 assert sync.well_matched("Die With a Smile", "Die With A Smile")
 assert not sync.well_matched("totally unrelated reaction video", "Some Song")
 
-# match(): among well-matched results, prefer the audio 'song' over the MV
+# match(): keep both audio + mv ids; videoId picks audio by default, mv with PREFER_MV
 sync.yt_search = lambda q: [
     {"id": {"videoId": "mv"}, "snippet": {"title": "Billie Eilish - BIRDS OF A FEATHER (Official Music Video)", "channelTitle": "BillieEilishVEVO"}},
     {"id": {"videoId": "aud"}, "snippet": {"title": "BIRDS OF A FEATHER", "channelTitle": "Billie Eilish - Topic"}},
 ]
-assert sync.match("Birds of a Feather", "Billie Eilish") == ("aud", True)
+entry, well = sync.match("Birds of a Feather", "Billie Eilish")
+assert well and entry == {"videoId": "aud", "audio": "aud", "mv": "mv"}, entry
 
 import os as _o
 _o.environ["PREFER_MV"] = "1"
-assert sync.match("Birds of a Feather", "Billie Eilish") == ("mv", True)
+assert sync.match("Birds of a Feather", "Billie Eilish")[0] == {"videoId": "mv", "audio": "aud", "mv": "mv"}
 del _o.environ["PREFER_MV"]
 
 # no result -> skip
 sync.yt_search = lambda q: []
 assert sync.match("x", "y") == (None, False)
 
-# only a weak result -> still returned, flagged weak
+# only a weak result -> still returned, flagged weak, no audio/mv signal
 sync.yt_search = lambda q: [{"id": {"videoId": "vW"}, "snippet": {"title": "totally different clip", "channelTitle": "rando"}}]
-assert sync.match("Some Song", "Some Artist") == ("vW", False)
+assert sync.match("Some Song", "Some Artist") == ({"videoId": "vW", "audio": None, "mv": None}, False)
+
+# cache_entry back-compat: bare string still works
+assert sync.cache_entry("abc") == {"videoId": "abc", "audio": None, "mv": None}
 
 sync.yt_search = lambda q: []
 assert sync.match("x", "y") == (None, False)
@@ -45,9 +49,14 @@ sync.yt_search = boom
 cache = {"Song A|Artist": "vidA", "Weak B|Artist": "vidB"}
 prev_unmatched = {"Weak B|Artist"}
 
-assert sync.resolve("Song A|Artist", "Song A", "Artist", cache, prev_unmatched, False) == ("vidA", True)
-assert sync.resolve("Weak B|Artist", "Weak B", "Artist", cache, prev_unmatched, False) == ("vidB", False)
-assert sync.resolve("Song A|Artist", "Song A", "Artist", cache, prev_unmatched, True) == ("vidA", True)
+def rv(*a):
+    e, w = sync.resolve(*a)
+    return e["videoId"], w
+
+
+assert rv("Song A|Artist", "Song A", "Artist", cache, prev_unmatched, False) == ("vidA", True)
+assert rv("Weak B|Artist", "Weak B", "Artist", cache, prev_unmatched, False) == ("vidB", False)
+assert rv("Song A|Artist", "Song A", "Artist", cache, prev_unmatched, True) == ("vidA", True)
 try:
     sync.resolve("Weak B|Artist", "Weak B", "Artist", cache, prev_unmatched, True)
     raise SystemExit("expected search for weak match under RETRY_WEAK")
