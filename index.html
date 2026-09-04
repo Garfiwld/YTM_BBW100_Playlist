@@ -7,25 +7,29 @@
 <style>
   :root {
     --bg:#fff; --fg:#1a1a1a; --muted:#666; --line:#e2e2e2;
-    --card:#f7f7f7; --accent:#c4302b; --warn:#b26a00;
+    --card:#f7f7f7; --accent:#c4302b; --warn:#b26a00; --ok:#1a7f37;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg:#16181c; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2f36;
-      --card:#1e2127; --accent:#ff5b57; --warn:#e0a044;
+      --card:#1e2127; --accent:#ff5b57; --warn:#e0a044; --ok:#4ac26b;
     }
   }
   * { box-sizing: border-box; }
   body {
-    margin:0; padding:1.5rem; background:var(--bg); color:var(--fg);
+    margin:0; padding:1.5rem 1.5rem 5rem; background:var(--bg); color:var(--fg);
     font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   }
   h1 { font-size:1.25rem; margin:0 0 .5rem; }
   a { color:var(--accent); }
-  .bar { display:flex; flex-wrap:wrap; gap:.6rem 1rem; align-items:center; margin-bottom:1rem; }
-  select { font:inherit; padding:.3rem .5rem; background:var(--card); color:var(--fg);
+  .bar { display:flex; flex-wrap:wrap; gap:.6rem 1rem; align-items:center; margin-bottom:.6rem; }
+  select, input[type=text] { font:inherit; padding:.3rem .5rem; background:var(--card); color:var(--fg);
            border:1px solid var(--line); border-radius:6px; }
   .meta { color:var(--muted); font-size:13.5px; }
+  details { margin-bottom:1rem; font-size:13.5px; }
+  details summary { cursor:pointer; color:var(--muted); }
+  details .body { margin-top:.5rem; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; }
+  details input { width:min(360px, 70vw); }
   .hint { background:var(--card); border:1px solid var(--line); border-radius:8px;
           padding:.7rem 1rem; margin-bottom:1rem; font-size:13px; color:var(--muted); }
   code { background:var(--line); padding:.1em .35em; border-radius:4px; font-size:.9em; }
@@ -33,16 +37,25 @@
          padding:.7rem 0; border-top:1px solid var(--line); align-items:start; }
   .rank { font-weight:700; font-size:1.05rem; text-align:right; }
   .move { font-size:11px; color:var(--muted); font-weight:400; }
-  .thumb { width:84px; height:63px; object-fit:cover; border-radius:5px; background:var(--card); display:block; }
-  .novid { width:84px; height:63px; border-radius:5px; background:var(--card);
-           display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:11px; }
+  .thumb, .novid { width:84px; height:63px; border-radius:5px; background:var(--card); display:block; }
+  .thumb { object-fit:cover; }
+  .novid { display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:11px; }
   .song { font-weight:600; }
   .artist { color:var(--muted); }
   .sub { font-size:12.5px; color:var(--muted); margin-top:.15rem; }
-  .links { margin-top:.35rem; display:flex; flex-wrap:wrap; gap:.3rem .8rem; font-size:13px; }
+  .links { margin-top:.35rem; display:flex; flex-wrap:wrap; gap:.3rem .8rem; font-size:13px; align-items:center; }
+  .links input { width:130px; font-size:12px; padding:.15rem .35rem; }
   .badge { display:inline-block; font-size:11px; font-weight:700; color:var(--warn);
            border:1px solid var(--warn); border-radius:4px; padding:0 .3em; margin-left:.4rem; }
-  #list.only-weak .row:not(.weak) { display:none; }
+  .badge.staged { color:var(--ok); border-color:var(--ok); }
+  #list.only-weak .row:not(.weak):not(.staged) { display:none; }
+  #save { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line);
+          padding:.7rem 1.5rem; display:flex; gap:1rem; align-items:center; font-size:13.5px; }
+  #save button { font:inherit; font-weight:600; padding:.4rem .9rem; border-radius:6px; cursor:pointer;
+                 border:1px solid var(--accent); background:var(--accent); color:#fff; }
+  #save button:disabled { opacity:.5; cursor:default; }
+  #save.hidden { display:none; }
+  #status { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -52,28 +65,58 @@
   <label><input type="checkbox" id="onlyweak"> weak only</label>
   <span class="meta" id="meta"></span>
 </div>
+
+<details id="cfg">
+  <summary>⚙ GitHub token (needed to save edits)</summary>
+  <div class="body">
+    <input type="text" id="token" placeholder="github_pat_… (fine-grained, Contents: read+write)" autocomplete="off">
+    <button type="button" id="savetok">store</button>
+    <span class="meta">kept only in this browser's localStorage · <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">create one</a></span>
+  </div>
+</details>
+
 <div class="hint" id="hint" hidden>
-  <b class="badge">WEAK</b> = added from the top result but its title didn't clearly
-  match. Fix: get the right id from the search link, set it in <code>cache.json</code>
-  under <code>song|artist</code>, delete that line from <code>unmatched.txt</code>, commit.
+  <b class="badge">WEAK</b> = added from the top result but its title didn't clearly match.
+  Edit the id field on a row, then <b>Save</b> — it commits <code>cache.json</code>,
+  <code>unmatched.txt</code> and this week's <code>charts/…json</code> straight to the repo.
 </div>
 <div id="list">loading…</div>
 
+<div id="save" class="hidden">
+  <span id="count"></span>
+  <button type="button" id="commit">Save to GitHub</button>
+  <span id="status"></span>
+</div>
+
 <script>
+const REPO = 'Garfiwld/YTM_BBW100_Playlist', BRANCH = 'master';
 const yt   = id => `https://www.youtube.com/watch?v=${id}`;
 const ytm  = id => `https://music.youtube.com/watch?v=${id}`;
 const srch = q  => `https://music.youtube.com/search?q=${encodeURIComponent(q)}`;
 const esc  = s  => (s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const b64  = s  => btoa(unescape(encodeURIComponent(s)));
+const unb64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+
+const weekSel = document.getElementById('week');
+const listEl  = document.getElementById('list');
+const metaEl  = document.getElementById('meta');
+const saveBar = document.getElementById('save');
+const tokenIn = document.getElementById('token');
+
+let chart = null;                 // current chart json
+const staged = new Map();         // "song|artist" -> new videoId
+
+tokenIn.value = localStorage.getItem('ghToken') || '';
+document.getElementById('savetok').onclick = () => {
+  localStorage.setItem('ghToken', tokenIn.value.trim());
+  document.getElementById('cfg').open = false;
+};
 
 async function j(path) {
   const r = await fetch(path, {cache: 'no-store'});
   if (!r.ok) throw new Error(path + ' ' + r.status);
   return r.json();
 }
-
-const weekSel = document.getElementById('week');
-const listEl  = document.getElementById('list');
-const metaEl  = document.getElementById('meta');
 
 function move(row) {
   const lw = row.last_week, tw = row.this_week;
@@ -83,36 +126,130 @@ function move(row) {
   return `<span class="move">${d > 0 ? '▲' + d : '▼' + (-d)}</span>`;
 }
 
-function render(chart) {
+function refreshSaveBar() {
+  saveBar.classList.toggle('hidden', staged.size === 0);
+  document.getElementById('count').textContent =
+    `${staged.size} change${staged.size === 1 ? '' : 's'} staged`;
+}
+
+function render() {
   const rows = [...chart.data].sort((a, b) => a.this_week - b.this_week);
   const weak = rows.filter(r => r.weak).length;
   const matched = rows.filter(r => r.videoId).length;
   metaEl.textContent = `${rows.length} songs · ${matched} matched · ${weak} weak`;
-  document.getElementById('hint').hidden = !weak;
-  listEl.innerHTML = rows.map(r => {
+  document.getElementById('hint').hidden = !weak && staged.size === 0;
+
+  listEl.innerHTML = rows.map((r, idx) => {
+    const key = `${r.song}|${r.artist}`;
     const q = `${r.song} ${r.artist}`;
-    const art = r.videoId
-      ? `<a href="${yt(r.videoId)}"><img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/${r.videoId}/mqdefault.jpg" alt=""></a>`
+    const cur = staged.get(key) ?? r.videoId ?? '';
+    const isStaged = staged.has(key);
+    const art = cur
+      ? `<a href="${yt(cur)}"><img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/${cur}/mqdefault.jpg" alt=""></a>`
       : `<div class="novid">no match</div>`;
-    const links = r.videoId
-      ? `<a href="${ytm(r.videoId)}">▶ YT Music</a><a href="${yt(r.videoId)}">▶ YouTube</a><a href="${srch(q)}">🔎 search</a>`
-      : `<a href="${srch(q)}">🔎 search</a>`;
-    return `<div class="row ${r.weak ? 'weak' : ''}">
+    return `<div class="row ${r.weak ? 'weak' : ''} ${isStaged ? 'staged' : ''}" data-idx="${idx}">
       <div class="rank">${r.this_week}${move(r)}</div>
       ${art}
       <div>
-        <div><span class="song">${esc(r.song)}</span> — <span class="artist">${esc(r.artist)}</span>${r.weak ? '<span class="badge">WEAK</span>' : ''}</div>
-        <div class="sub">peak #${r.peak_position} · ${r.weeks_on_chart} wk${r.weeks_on_chart === 1 ? '' : 's'}${r.videoId ? ' · <code>' + esc(r.song) + '|' + esc(r.artist) + '</code>' : ''}</div>
-        <div class="links">${links}</div>
+        <div><span class="song">${esc(r.song)}</span> — <span class="artist">${esc(r.artist)}</span>${
+          isStaged ? '<span class="badge staged">EDITED</span>' : r.weak ? '<span class="badge">WEAK</span>' : ''}</div>
+        <div class="sub">peak #${r.peak_position} · ${r.weeks_on_chart} wk${r.weeks_on_chart === 1 ? '' : 's'}</div>
+        <div class="links">
+          <a href="${srch(q)}">🔎 search</a>
+          ${cur ? `<a href="${ytm(cur)}">▶ YT Music</a>` : ''}
+          <input type="text" class="vid" value="${esc(cur)}" placeholder="videoId" data-key="${esc(key)}">
+        </div>
       </div>
     </div>`;
   }).join('');
+
+  listEl.querySelectorAll('input.vid').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const key = inp.dataset.key;
+      const orig = (chart.data.find(d => `${d.song}|${d.artist}` === key) || {}).videoId || '';
+      const val = inp.value.trim();
+      if (val && val !== orig) staged.set(key, val);
+      else staged.delete(key);
+      refreshSaveBar();
+      render();
+    });
+  });
 }
 
 document.getElementById('onlyweak').addEventListener('change', e => {
   listEl.classList.toggle('only-weak', e.target.checked);
 });
 
+// ---- GitHub write ----
+async function gh(path, opts) {
+  const token = (localStorage.getItem('ghToken') || '').trim();
+  if (!token) throw new Error('set a GitHub token first (⚙ above)');
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    ...opts,
+    headers: {Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', ...(opts?.headers || {})},
+  });
+  if (!r.ok) throw new Error(`${path}: ${r.status} ${(await r.json()).message || ''}`);
+  return r.json();
+}
+
+async function getFile(path) {
+  const d = await gh(`${path}?ref=${BRANCH}`, {});
+  return {sha: d.sha, text: unb64(d.content)};
+}
+
+async function putFile(path, text, sha, msg) {
+  await gh(path, {
+    method: 'PUT',
+    body: JSON.stringify({message: msg, content: b64(text), sha, branch: BRANCH}),
+  });
+}
+
+document.getElementById('commit').onclick = async () => {
+  const btn = document.getElementById('commit'), st = document.getElementById('status');
+  btn.disabled = true; st.textContent = 'reading files…';
+  try {
+    const date = weekSel.value;
+    const [cacheF, chartF] = await Promise.all([getFile('cache.json'), getFile(`charts/${date}.json`)]);
+    let unmatchedF;
+    try { unmatchedF = await getFile('unmatched.txt'); } catch { unmatchedF = {sha: undefined, text: ''}; }
+
+    const cache = JSON.parse(cacheF.text);
+    const chartObj = JSON.parse(chartF.text);
+    for (const [key, vid] of staged) {
+      cache[key] = vid;
+      const row = chartObj.data.find(d => `${d.song}|${d.artist}` === key);
+      if (row) { row.videoId = vid; row.weak = false; }
+    }
+    const keys = new Set(staged.keys());
+    const unmatched = unmatchedF.text.split('\n')
+      .filter(l => l.trim() && !keys.has(l.split('\t')[1])).join('\n');
+    const unmatchedOut = unmatched ? unmatched + '\n' : '';
+
+    const msg = `dashboard: fix ${staged.size} videoId(s) for ${date}`;
+    st.textContent = 'committing cache.json…';
+    await putFile('cache.json', JSON.stringify(cache, null, 2) + '\n', cacheF.sha, msg);
+    st.textContent = 'committing chart…';
+    await putFile(`charts/${date}.json`, JSON.stringify(chartObj, null, 2) + '\n', chartF.sha, msg);
+    if (unmatchedF.text !== unmatchedOut) {
+      st.textContent = 'committing unmatched.txt…';
+      await putFile('unmatched.txt', unmatchedOut, unmatchedF.sha, msg);
+    }
+
+    for (const [key, vid] of staged) {
+      const row = chart.data.find(d => `${d.song}|${d.artist}` === key);
+      if (row) { row.videoId = vid; row.weak = false; }
+    }
+    staged.clear();
+    refreshSaveBar(); render();
+    st.textContent = 'saved ✓ (Pages redeploys in ~1 min)';
+  } catch (e) {
+    st.textContent = '✗ ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+// ---- boot ----
 (async () => {
   let dates;
   try { dates = await j('charts/index.json'); }
@@ -124,7 +261,8 @@ document.getElementById('onlyweak').addEventListener('change', e => {
 
   async function load() {
     listEl.textContent = 'loading…';
-    try { render(await j(`charts/${weekSel.value}.json`)); }
+    staged.clear(); refreshSaveBar();
+    try { chart = await j(`charts/${weekSel.value}.json`); render(); }
     catch (e) { listEl.innerHTML = `<p>could not load ${esc(weekSel.value)}: ${esc(e.message)}</p>`; }
   }
   weekSel.addEventListener('change', () => {

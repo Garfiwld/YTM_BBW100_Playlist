@@ -109,18 +109,20 @@ Commits the updated state files back. If `recent.json`'s `date` hasn't changed s
 
 ## Review dashboard
 
-`index.html` is a static, dependency-free page that lists the weak matches from
-`unmatched.txt` with thumbnails, the chosen video, and a YT Music search link for
-each — so you can spot and fix wrong picks.
+`index.html` is a static, dependency-free page: pick any chart week (1958→now),
+see the full 100 in rank order with movement, match status, thumbnails, and
+YT Music links. `weak only` filters to the picks that need a look.
 
 Enable it: repo → Settings → Pages → Source **Deploy from a branch**, branch
-`master` / folder `/ (root)`. It must be root, not `/docs`, so the page can
-`fetch` `unmatched.txt`, `config.json`, and `charts/*.json`. Then open
+`master` / folder `/ (root)` — must be root so the page can `fetch`
+`charts/*.json` and `charts/index.json`. Then open
 `https://garfiwld.github.io/YTM_BBW100_Playlist/`.
 
-To fix a pick: grab the right video id from the search link, set it in
-`cache.json` under the shown key, delete that song's line from `unmatched.txt`,
-commit. The next sync swaps it into the playlists.
+**Fixing a pick from the dashboard:** paste a fine-grained GitHub token
+(*Contents: read+write* on this repo) into the ⚙ box — it stays in that browser's
+localStorage. Edit the `videoId` field on any row, hit **Save to GitHub**: it
+commits `cache.json`, `unmatched.txt`, and that week's `charts/…json` in one go.
+Pages redeploys in ~a minute; the next sync uses the corrected id.
 
 ## Tests
 
