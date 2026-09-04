@@ -15,10 +15,14 @@ real (partial) playlist, and the next run tops it up. Off-chart tracks are prune
 only after a full clean pass; the monthly archive snapshot likewise only fires on
 a complete run. Holdovers are not reordered unless FULL_REORDER=1 (wipe + refill).
 
+Matching: one search.list call per uncached song -- top result wins. If its title
+clears FUZZY_THRESHOLD it's a clean match; otherwise it's still added but logged to
+unmatched.txt for a human to review. No result at all -> skipped.
+
 Quota: two separate daily caps -- 10k units/day AND a hard 100 search.list
-calls/day. Each uncached song costs 1-2 search calls, so a cold first run only
-gets through ~60-90 songs/day. On QuotaExceeded the script saves all state
-(config.json minus last_synced_date) and exits; re-run the next day to resume.
+calls/day. One call per uncached song, so a cold first run gets through ~100
+songs/day. On QuotaExceeded the script saves all state (config.json minus
+last_synced_date) and exits; re-run the next day to resume.
 
 Env / .env:
   YTM_CLIENT_ID, YTM_CLIENT_SECRET   the OAuth client
@@ -51,7 +55,7 @@ RECENT_URL = "https://raw.githubusercontent.com/mhollingshead/billboard-hot-100/
 API = "https://www.googleapis.com/youtube/v3"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 ROLLING_NAME = "Billboard Hot 100"
-FUZZY_THRESHOLD = 0.6
+FUZZY_THRESHOLD = 0.8
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CHARTS_DIR = os.path.join(HERE, "charts")
@@ -98,25 +102,8 @@ def norm(s):
     return s.strip()
 
 
-def primary_artist(artist):
-    a = re.split(r"\bfeat\.?\b|\bfeaturing\b|\bwith\b|&|,|/| x ", artist, flags=re.I)[0]
-    return a.strip()
-
-
 def ratio(a, b):
     return difflib.SequenceMatcher(None, norm(a), norm(b)).ratio()
-
-
-def pick(items, want_title, check_title):
-    """First search result with a videoId (and, if check_title, a fuzzy title match)."""
-    for it in items or []:
-        vid = it.get("id", {}).get("videoId")
-        if not vid:
-            continue
-        if check_title and ratio(it.get("snippet", {}).get("title", ""), want_title) < FUZZY_THRESHOLD:
-            continue
-        return vid
-    return None
 
 
 # --- YouTube Data API v3 ----------------------------------------------------
@@ -189,17 +176,14 @@ def resolve(key, song, artist, cache, prev_unmatched, retry_weak):
 
 
 def match(song, artist):
-    """(videoId, well_matched). well_matched=False => top hit didn't fuzzy-match the
-    title; logged to unmatched.txt. At most 2 search calls (search.list caps at 100/day)."""
-    vid = pick(yt_search(f"{song} {artist}"), song, check_title=True)
-    if vid:
-        return vid, True
-    items = yt_search(f"{norm(song)} {primary_artist(artist)}")
-    vid = pick(items, song, check_title=True)
-    if vid:
-        return vid, True
-    vid = pick(items, song, check_title=False)
-    return (vid, False) if vid else (None, False)
+    """One search.list call. Take the top result; well_matched = its title clears
+    FUZZY_THRESHOLD. Weak ones are still added to the playlist but logged to
+    unmatched.txt for a human to check later."""
+    for it in yt_search(f"{song} {artist}"):
+        vid = it.get("id", {}).get("videoId")
+        if vid:
+            return vid, ratio(it.get("snippet", {}).get("title", ""), song) >= FUZZY_THRESHOLD
+    return None, False
 
 
 def playlist_items(pid):

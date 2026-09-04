@@ -20,12 +20,12 @@ Runtime is Python stdlib only.
 
 ## How matching works
 
-For each of the 100 songs (at most **2** `search.list` calls — the daily cap is 100):
+For each uncached song — **one** `search.list` call (`q="song artist"`), take the top result:
 
-1. `search.list q="song artist"`; take the top hit whose title fuzzy-matches (ratio ≥ 0.6).
-2. Retry once with parentheticals and featured artists stripped.
-3. Still no fuzzy match → take that retry's top result anyway, log it to `unmatched.txt`.
-4. Nothing at all → skipped and logged; the playlist is just shorter that week.
+1. Its title fuzzy-matches (ratio ≥ 0.8) → clean match.
+2. It doesn't → still added to the playlist, but logged to `unmatched.txt` for a
+   human to check and fix later.
+3. No result at all → skipped and logged; the playlist is just shorter that week.
 
 `cache.json` remembers resolved `song|artist → videoId`; a cached song is **never
 re-searched**, including weak matches in `unmatched.txt`. To force weak entries to
@@ -35,8 +35,8 @@ delete their lines from `unmatched.txt` and their keys from `cache.json`.
 ## Quota
 
 YouTube Data API v3 has **two** daily caps: 10,000 units/day *and* a hard
-**100 `search.list` calls/day**. The search cap is what bites — an uncached song
-costs 1–2 calls, so a cold first run only gets through ~60–90 songs per day.
+**100 `search.list` calls/day**. The search cap is what bites — one call per
+uncached song, so a cold first run gets through ~100 songs (≈ the whole chart).
 On `quotaExceeded` the script saves all state (`config.json` without
 `last_synced_date`) and exits; re-run the next day to resume — cached songs are
 skipped, so it only spends search calls on ones still missing.
@@ -47,8 +47,8 @@ skipped, so it only spends search calls on ones still missing.
   archive playlist (`last_archived_month` in `config.json` gates it) ≈ 5,000 units.
 - **`FULL_REORDER=1 python3 sync.py`**: clears the rolling playlist and refills it
   in exact rank order (~10,000 units). Run by hand on a quiet day.
-- **First run**: paced by the 100-search/day cap — ~60–90 songs/day, so ~2 days.
-  The playlist fills in as it goes.
+- **First run**: ~100 uncached songs = ~100 search calls, right at the daily cap.
+  If it stops a little short, re-run the next day; the playlist fills in as it goes.
 
 ## One-time setup
 
