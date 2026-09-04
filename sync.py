@@ -2,7 +2,8 @@
 """Sync the Billboard Hot 100 into a rolling YouTube Music playlist + a weekly archive.
 
 Data source: https://github.com/mhollingshead/billboard-hot-100 (recent.json)
-Auth: ytmusicapi OAuth (oauth.json + Google OAuth client id/secret).
+Auth: ytmusicapi browser auth (browser.json). OAuth is broken upstream -- YouTube
+      returns HTTP 400 on search for OAuth tokens (ytmusicapi 1.12.x).
 
 State files (committed back by CI):
   config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD"}
@@ -78,12 +79,8 @@ def ratio(a, b):
 
 def yt():
     from ytmusicapi import YTMusic
-    from ytmusicapi.auth.oauth import OAuthCredentials
 
-    oauth_file = os.environ.get("YTM_OAUTH_FILE", os.path.join(HERE, "oauth.json"))
-    cid = os.environ["YTM_CLIENT_ID"]
-    csecret = os.environ["YTM_CLIENT_SECRET"]
-    return YTMusic(oauth_file, oauth_credentials=OAuthCredentials(client_id=cid, client_secret=csecret))
+    return YTMusic(os.environ.get("YTM_BROWSER_FILE", os.path.join(HERE, "browser.json")))
 
 
 def first_id(results, want_title, check_title):

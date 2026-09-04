@@ -23,44 +23,40 @@ For each of the 100 songs:
 
 ## One-time setup
 
-### 1. Google OAuth client
+### 1. Browser auth
 
-1. [Google Cloud Console](https://console.cloud.google.com/) → new project.
-2. APIs & Services → Enable **YouTube Data API v3**.
-3. OAuth consent screen → External → add the Google account that will own the
-   playlists as a **Test user**.
-4. Credentials → Create credentials → OAuth client ID → type **TVs and Limited Input devices**.
-5. Note the **Client ID** and **Client secret**.
-
-### 2. Generate the token
+OAuth does not work: YouTube returns HTTP 400 on `search` for OAuth tokens
+(ytmusicapi 1.12.x), so this uses browser auth.
 
 ```bash
 pip install -r requirements.txt
-ytmusicapi oauth --client-id YOUR_ID --client-secret YOUR_SECRET
+ytmusicapi browser
 ```
 
-Follow the device-code prompt while logged into the account that should own the playlists.
-Produces `oauth.json`.
+Follow the prompt: open <https://music.youtube.com> logged into the account that
+should own the playlists → DevTools → Network → copy the request headers of any
+`/youtubei/v1/...` POST → paste. Produces `browser.json`.
 
-### 3. Run once locally to bootstrap
+Those cookies last for months, but die if you sign that Google session out
+elsewhere — re-run `ytmusicapi browser` and refresh the secret if sync starts
+failing with 401.
+
+### 2. Run once locally to bootstrap
 
 ```bash
-cp .env.example .env      # then edit .env with your client id/secret
-python sync.py            # sync.py auto-loads .env
+python sync.py
 ```
 
 First run creates the rolling playlist and writes its id into `config.json`. Commit
 `config.json`, `cache.json`, `unmatched.txt`.
 
-### 4. GitHub Actions
+### 3. GitHub Actions
 
-Repo → Settings → Secrets and variables → Actions:
+Repo → Settings → Secrets and variables → Actions → **New repository secret**:
 
 | Secret | Value |
 |---|---|
-| `YTM_OAUTH_JSON` | full contents of `oauth.json` |
-| `YTM_CLIENT_ID` | OAuth client id |
-| `YTM_CLIENT_SECRET` | OAuth client secret |
+| `YTM_BROWSER_JSON` | full contents of `browser.json` |
 
 The workflow runs every Wednesday 20:00 Asia/Bangkok (`0 13 * * 3` UTC) and on manual
 dispatch. It commits the updated state files back to the repo. If the chart date in
