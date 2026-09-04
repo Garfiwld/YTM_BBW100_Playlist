@@ -15,21 +15,23 @@ Runtime is Python stdlib only.
 
 ## How matching works
 
-For each of the 100 songs:
+For each of the 100 songs (at most **2** `search.list` calls — the daily cap is 100):
 
-1. `search.list` with `videoCategoryId=10` (Music); take the top hit whose title
-   fuzzy-matches (ratio ≥ 0.6).
-2. Retry with parentheticals and featured artists stripped.
-3. Fallback: `search.list` with no category — any video. Logged to `unmatched.txt`
-   and re-tried as a Music result every following week.
+1. `search.list q="song artist"`; take the top hit whose title fuzzy-matches (ratio ≥ 0.6).
+2. Retry once with parentheticals and featured artists stripped.
+3. Still no fuzzy match → take that retry's top result anyway, log it to
+   `unmatched.txt`, retry properly every following week.
 4. Nothing at all → skipped and logged; the playlist is just shorter that week.
 
 `cache.json` remembers resolved `song|artist → videoId` so repeat entries aren't re-searched.
 
 ## Quota
 
-YouTube Data API v3 free quota is **10,000 units/day**. `search.list` = 100 units,
-every playlist write = 50. To stay inside it:
+YouTube Data API v3 has **two** daily caps: 10,000 units/day *and* a hard
+**100 `search.list` calls/day**. The search cap is what bites — an uncached song
+costs 1–2 calls, so a cold first run only gets through ~60–90 songs per day.
+On `quotaExceeded` the script saves `cache.json` / `unmatched.txt` / `config.json`
+(without `last_synced_date`) and exits; re-run the next day to resume. To stay inside:
 
 - **Weekly**: the rolling playlist is *diffed* — remove chart drops, insert new
   entries at their rank position, holdovers left where they are. Only the churn

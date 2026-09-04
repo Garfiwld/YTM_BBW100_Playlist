@@ -9,13 +9,16 @@ Needs a Google OAuth client (type "TVs and Limited Input devices") and a token
 minted with `ytmusicapi oauth` (or any device flow for scope
 https://www.googleapis.com/auth/youtube).
 
-Quota (default 10k units/day; search.list=100, every playlist write=50):
+Quota: two separate daily caps -- 10k units/day AND a hard 100 search.list
+calls/day. Each uncached song costs 1-2 search calls, so a cold first run only
+gets through ~60-90 songs/day. On QuotaExceeded the script saves cache.json /
+unmatched.txt / config.json (minus last_synced_date) and exits; re-running the
+next day resumes from the cache.
   - weekly: diff the rolling playlist (remove drops, insert new entries at their
-    rank position) -- only the churn, ~4k units. Holdovers are NOT reordered.
-  - monthly: also snapshot an archive playlist (~5k units).
-  - FULL_REORDER=1 forces a wipe+refill of the rolling playlist (~10k units) to
-    re-sort holdovers exactly; run it by hand on a quiet day.
-  - first run does ~15-20k units -- split it across 2 days, it resumes from cache.json.
+    rank position). Holdovers are NOT reordered.
+  - monthly: also snapshot an archive playlist.
+  - FULL_REORDER=1 forces a wipe+refill of the rolling playlist to re-sort
+    holdovers exactly; run it by hand on a quiet day.
 
 Env / .env:
   YTM_CLIENT_ID, YTM_CLIENT_SECRET   the OAuth client
@@ -25,8 +28,8 @@ State files (committed back by CI):
   config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD",
                      "last_archived_month": "YYYY-MM"}
   cache.json     -> {"song|artist": "videoId"}   resolved matches, reused across weeks
-  unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (not Music category);
-                    retried every run.
+  unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (top hit's title
+                    didn't fuzzy-match); retried every run.
 """
 
 import difflib
@@ -44,7 +47,6 @@ API = "https://www.googleapis.com/youtube/v3"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 ROLLING_NAME = "Billboard Hot 100"
 FUZZY_THRESHOLD = 0.6
-MUSIC_CATEGORY = "10"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(HERE, "config.json")
@@ -136,6 +138,10 @@ def access_token():
     return _token["value"]
 
 
+class QuotaExceeded(Exception):
+    pass
+
+
 def api(method, path, params=None, body=None):
     url = f"{API}/{path}"
     if params:
@@ -153,32 +159,32 @@ def api(method, path, params=None, body=None):
                 return json.loads(text) if text else {}
         except urllib.error.HTTPError as e:
             payload = e.read().decode()
-            if e.code in (403, 500, 503) and attempt < 3 and "quotaExceeded" not in payload:
+            if e.code == 429 or "quotaExceeded" in payload:
+                raise QuotaExceeded(f"{method} {path}: {payload[:200]}")
+            if e.code in (403, 500, 503) and attempt < 3:
                 time.sleep(2 ** attempt)
                 continue
             sys.exit(f"{method} {path} -> HTTP {e.code}: {payload}")
 
 
-def yt_search(query, music_only):
-    params = {"part": "snippet", "type": "video", "maxResults": "5", "q": query}
-    if music_only:
-        params["videoCategoryId"] = MUSIC_CATEGORY
-        params["regionCode"] = "US"
-    return api("GET", "search", params).get("items", [])
+def yt_search(query):
+    return api("GET", "search", {
+        "part": "snippet", "type": "video", "maxResults": "5", "q": query,
+    }).get("items", [])
 
 
 def match(song, artist):
-    """(videoId, well_matched). well_matched=False => not confirmed as a Music-category
-    result; logged to unmatched.txt and retried next week."""
-    q = f"{song} {artist}"
-    vid = pick(yt_search(q, music_only=True), song, check_title=True)
+    """(videoId, well_matched). well_matched=False => top hit didn't fuzzy-match the
+    title; logged to unmatched.txt and retried next week. At most 2 search calls
+    (search.list is capped at 100/day)."""
+    vid = pick(yt_search(f"{song} {artist}"), song, check_title=True)
     if vid:
         return vid, True
-    q2 = f"{norm(song)} {primary_artist(artist)}"
-    vid = pick(yt_search(q2, music_only=True), song, check_title=True)
+    items = yt_search(f"{norm(song)} {primary_artist(artist)}")
+    vid = pick(items, song, check_title=True)
     if vid:
         return vid, True
-    vid = pick(yt_search(q, music_only=False), song, check_title=False)
+    vid = pick(items, song, check_title=False)
     return (vid, False) if vid else (None, False)
 
 
@@ -260,6 +266,17 @@ def main():
     except FileNotFoundError:
         pass
 
+    def persist():
+        save_json(CONFIG, config)
+        save_json(CACHE, cache)
+        with open(UNMATCHED, "w") as f:
+            f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
+
+    def quota_stop(where):
+        persist()
+        sys.exit(f"\nquota exhausted during {where}; state saved. Re-run tomorrow "
+                 f"-- it resumes from cache.json. (matched so far: {len(ordered)})")
+
     ordered, still_unmatched, skipped, seen = [], [], [], set()
     for e in entries:
         song, artist = e["song"], e["artist"]
@@ -267,7 +284,10 @@ def main():
         if key in cache and key not in prev_unmatched:
             vid, well = cache[key], True
         else:
-            vid, well = match(song, artist)
+            try:
+                vid, well = match(song, artist)
+            except QuotaExceeded:
+                quota_stop("search")
 
         if not vid:
             skipped.append(key)
@@ -277,7 +297,7 @@ def main():
         cache[key] = vid
         if not well:
             still_unmatched.append(f"{date}\t{key}\t{vid}")
-            print(f"VIDEO #{e['this_week']:>3} {key} -> {vid} (non-music fallback)")
+            print(f"WEAK  #{e['this_week']:>3} {key} -> {vid} (weak title match)")
         if vid not in seen:
             seen.add(vid)
             ordered.append(vid)
@@ -286,38 +306,36 @@ def main():
         sys.exit(f"Only {len(ordered)} matches - aborting, looks broken.")
 
     desc = f"Billboard Hot 100 - auto-updated weekly. Chart week: {date}"
+    try:
+        pid = config.get("rolling_playlist_id")
+        if not pid:
+            pid = create_playlist(ROLLING_NAME, desc, ordered)
+            config["rolling_playlist_id"] = pid
+            print(f"Created rolling playlist {pid}")
+        elif os.environ.get("FULL_REORDER"):
+            for item_id, _ in playlist_items(pid):
+                api("DELETE", "playlistItems", {"id": item_id})
+            add_items(pid, ordered)
+            print(f"Rebuilt rolling playlist {pid} ({len(ordered)} tracks, full reorder)")
+        else:
+            added, removed = diff_rolling(pid, ordered)
+            print(f"Diffed rolling playlist {pid}: +{added} -{removed}")
+        api("PUT", "playlists", {"part": "snippet"},
+            {"id": pid, "snippet": {"title": ROLLING_NAME, "description": desc}})
 
-    pid = config.get("rolling_playlist_id")
-    if not pid:
-        pid = create_playlist(ROLLING_NAME, desc, ordered)
-        config["rolling_playlist_id"] = pid
-        print(f"Created rolling playlist {pid}")
-    elif os.environ.get("FULL_REORDER"):
-        for item_id, _ in playlist_items(pid):
-            api("DELETE", "playlistItems", {"id": item_id})
-        add_items(pid, ordered)
-        print(f"Rebuilt rolling playlist {pid} ({len(ordered)} tracks, full reorder)")
-    else:
-        added, removed = diff_rolling(pid, ordered)
-        print(f"Diffed rolling playlist {pid}: +{added} -{removed}")
-    api("PUT", "playlists", {"part": "snippet"},
-        {"id": pid, "snippet": {"title": ROLLING_NAME, "description": desc}})
-
-    month = date[:7]
-    if config.get("last_archived_month") != month:
-        archive = create_playlist(f"{ROLLING_NAME} - {date}", desc, ordered)
-        config["last_archived_month"] = month
-        print(f"Created archive playlist {archive}")
-    else:
-        print(f"Archive for {month} already done; skipping.")
+        month = date[:7]
+        if config.get("last_archived_month") != month:
+            archive = create_playlist(f"{ROLLING_NAME} - {date}", desc, ordered)
+            config["last_archived_month"] = month
+            print(f"Created archive playlist {archive}")
+        else:
+            print(f"Archive for {month} already done; skipping.")
+    except QuotaExceeded:
+        quota_stop("playlist write")
 
     config["last_synced_date"] = date
-    save_json(CONFIG, config)
-    save_json(CACHE, cache)
-    with open(UNMATCHED, "w") as f:
-        f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
-
-    print(f"\nDone. matched={len(ordered)} non_music_fallback={len(still_unmatched)} skipped={len(skipped)}")
+    persist()
+    print(f"\nDone. matched={len(ordered)} weak={len(still_unmatched)} skipped={len(skipped)}")
 
 
 if __name__ == "__main__":
