@@ -9,50 +9,78 @@ into YouTube Music:
 Chart data comes from [`mhollingshead/billboard-hot-100`](https://github.com/mhollingshead/billboard-hot-100)
 (`recent.json`), not scraped.
 
+`sync.py` talks to the **YouTube Data API v3** directly over OAuth — no `ytmusicapi`
+at runtime (its InnerTube endpoints reject OAuth Bearer tokens with HTTP 400).
+Runtime is Python stdlib only.
+
 ## How matching works
 
 For each of the 100 songs:
 
-1. `search(filter="songs")`, take the top hit whose title fuzzy-matches (ratio ≥ 0.6).
+1. `search.list` with `videoCategoryId=10` (Music); take the top hit whose title
+   fuzzy-matches (ratio ≥ 0.6).
 2. Retry with parentheticals and featured artists stripped.
-3. Fallback: `search(filter="videos")` — a plain YouTube video. Logged to `unmatched.txt`
-   and re-tried as a proper song every following week.
+3. Fallback: `search.list` with no category — any video. Logged to `unmatched.txt`
+   and re-tried as a Music result every following week.
 4. Nothing at all → skipped and logged; the playlist is just shorter that week.
 
 `cache.json` remembers resolved `song|artist → videoId` so repeat entries aren't re-searched.
+
+## Quota
+
+YouTube Data API v3 default free quota is **10,000 units/day**. `search.list` costs
+100, every playlist write costs 50. The first (bootstrap) run does ~100 searches +
+~200 writes ≈ 20,000 units; a normal week with a warm cache still runs ~15,000.
+
+**Request a quota increase before the first run:** Google Cloud Console → APIs &
+Services → YouTube Data API v3 → Quotas → select the queries-per-day quota → Edit →
+request e.g. 1,000,000/day. Approval takes a few days. Until then, run the bootstrap
+across two days (it resumes from `cache.json`).
 
 ## One-time setup
 
 ### 1. Google OAuth client
 
-1. [Google Cloud Console](https://console.cloud.google.com/) → new project.
+1. [Google Cloud Console](https://console.cloud.google.com/) → project.
 2. APIs & Services → Enable **YouTube Data API v3**.
-3. OAuth consent screen → External → add the Google account that will own the
-   playlists as a **Test user**.
-4. Credentials → Create credentials → OAuth client ID → type **TVs and Limited Input devices**.
-5. Note the **Client ID** and **Client secret**.
+3. OAuth consent screen → External → complete the Branding page → add the Google
+   account that will own the playlists as a **Test user**.
+4. Credentials → Create credentials → OAuth client ID → **TVs and Limited Input devices**.
+5. Note the **Client ID** and **Client secret**. (If you ever delete this client,
+   every token minted from it dies with `deleted_client` — make a new one and
+   re-mint.)
 
-### 2. Generate the token
-
-```bash
-pip install -r requirements.txt
-ytmusicapi oauth --client-id YOUR_ID --client-secret YOUR_SECRET
-```
-
-Follow the device-code prompt while logged into the account that should own the playlists.
-Produces `oauth.json`.
-
-### 3. Run once locally to bootstrap
+### 2. Mint the token
 
 ```bash
-cp .env.example .env      # then edit .env with your client id/secret
-python sync.py            # sync.py auto-loads .env
+pip install -r requirements.txt          # only needed for this step
+cp .env.example .env                      # fill in client id/secret
+ytmusicapi oauth --client-id "$(grep '^YTM_CLIENT_ID=' .env | cut -d= -f2)" \
+                 --client-secret "$(grep '^YTM_CLIENT_SECRET=' .env | cut -d= -f2)"
 ```
 
-First run creates the rolling playlist and writes its id into `config.json`. Commit
+Approve on the device-code page while logged into the playlist-owner account.
+Produces `oauth.json` (has the `refresh_token` `sync.py` needs).
+
+### 3. Check the token
+
+```bash
+python3 diag_oauth.py
+```
+
+Tests A (Data API playlists) and B (Data API search) must return HTTP 200. Test C
+(InnerTube) is expected to 400 — `sync.py` does not use that path.
+
+### 4. Bootstrap
+
+```bash
+python3 sync.py
+```
+
+Creates both playlists and writes `rolling_playlist_id` into `config.json`. Commit
 `config.json`, `cache.json`, `unmatched.txt`.
 
-### 4. GitHub Actions
+### 5. GitHub Actions
 
 Repo → Settings → Secrets and variables → Actions:
 
@@ -62,12 +90,12 @@ Repo → Settings → Secrets and variables → Actions:
 | `YTM_CLIENT_ID` | OAuth client id |
 | `YTM_CLIENT_SECRET` | OAuth client secret |
 
-The workflow runs every Wednesday 20:00 Asia/Bangkok (`0 13 * * 3` UTC) and on manual
-dispatch. It commits the updated state files back to the repo. If the chart date in
-`recent.json` hasn't changed since `last_synced_date`, the run is a no-op.
+Runs every Wednesday 20:00 Asia/Bangkok (`0 13 * * 3` UTC) and on manual dispatch.
+Commits the updated state files back. If `recent.json`'s `date` hasn't changed since
+`last_synced_date`, the run is a no-op.
 
 ## Tests
 
 ```bash
-python test_sync.py
+python3 test_sync.py
 ```

@@ -1,1 +1,3 @@
+# Runtime (sync.py) is stdlib-only. This is only for the one-time token mint:
+#   ytmusicapi oauth --client-id ... --client-secret ...
 ytmusicapi>=1.7.0

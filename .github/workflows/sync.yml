@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install -r requirements.txt
+      # sync.py is stdlib-only; no pip install needed.
 
       - name: Write OAuth token
         run: printf '%s' "$YTM_OAUTH_JSON" > oauth.json
