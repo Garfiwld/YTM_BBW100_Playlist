@@ -19,11 +19,13 @@ For each of the 100 songs (at most **2** `search.list` calls — the daily cap i
 
 1. `search.list q="song artist"`; take the top hit whose title fuzzy-matches (ratio ≥ 0.6).
 2. Retry once with parentheticals and featured artists stripped.
-3. Still no fuzzy match → take that retry's top result anyway, log it to
-   `unmatched.txt`, retry properly every following week.
+3. Still no fuzzy match → take that retry's top result anyway, log it to `unmatched.txt`.
 4. Nothing at all → skipped and logged; the playlist is just shorter that week.
 
-`cache.json` remembers resolved `song|artist → videoId` so repeat entries aren't re-searched.
+`cache.json` remembers resolved `song|artist → videoId`; a cached song is **never
+re-searched**, including weak matches in `unmatched.txt`. To force weak entries to
+be looked up again, run `RETRY_WEAK=1 python3 sync.py` (spends search calls) or just
+delete their lines from `unmatched.txt` and their keys from `cache.json`.
 
 ## Quota
 

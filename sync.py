@@ -29,7 +29,8 @@ State files (committed back by CI):
                      "last_archived_month": "YYYY-MM"}
   cache.json     -> {"song|artist": "videoId"}   resolved matches, reused across weeks
   unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (top hit's title
-                    didn't fuzzy-match); retried every run.
+                    didn't fuzzy-match). Kept from cache like anything else;
+                    RETRY_WEAK=1 re-searches them (costs search calls).
 """
 
 import difflib
@@ -277,12 +278,14 @@ def main():
         sys.exit(f"\nquota exhausted during {where}; state saved. Re-run tomorrow "
                  f"-- it resumes from cache.json. (matched so far: {len(ordered)})")
 
+    retry_weak = bool(os.environ.get("RETRY_WEAK"))
     ordered, still_unmatched, skipped, seen = [], [], [], set()
     for e in entries:
         song, artist = e["song"], e["artist"]
         key = f"{song}|{artist}"
-        if key in cache and key not in prev_unmatched:
-            vid, well = cache[key], True
+        weak_cached = key in prev_unmatched
+        if key in cache and not (weak_cached and retry_weak):
+            vid, well = cache[key], not weak_cached
         else:
             try:
                 vid, well = match(song, artist)
