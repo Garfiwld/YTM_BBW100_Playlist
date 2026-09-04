@@ -22,8 +22,8 @@ Runtime is Python stdlib only.
 
 For each uncached song — **one** `search.list` call, `q="song artist"`, restricted
 to the **Music category** (`videoCategoryId=10`). Among the (≤5) results, pick the
-best title match, tie-breaking toward the **audio "song"** (a `… - Topic` channel or
-an *Official Audio* title) over the **music video**. `PREFER_MV=1 python3 sync.py`
+best title match, tie-breaking toward **Audio** (a `… - Topic` channel or an
+*Official Audio* title) over the **Music Video**. `PREFER_MV=1 python3 sync.py`
 flips the preference. Then:
 
 1. Pick's title contains the song name, or fuzzy-matches it (ratio ≥ 0.8) → clean match.

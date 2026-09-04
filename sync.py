@@ -17,10 +17,10 @@ a complete run. Holdovers are not reordered unless FULL_REORDER=1 (wipe + refill
 
 Matching: one search.list call per uncached song, restricted to the Music category
 (videoCategoryId=10). Among the results, pick the best title match, tie-breaking
-toward the audio 'song' (a "- Topic" channel / "Official Audio" title) rather than
-the music video -- set PREFER_MV=1 to flip that. A pick whose title contains the
-song name or clears FUZZY_THRESHOLD is clean; otherwise it's still added but logged
-to unmatched.txt. No music result at all -> the song is skipped.
+toward Audio (a "- Topic" channel / "Official Audio" title) rather than the Music
+Video -- set PREFER_MV=1 to flip that. A pick whose title contains the song name
+or clears FUZZY_THRESHOLD is clean; otherwise it's still added but logged to
+unmatched.txt. No music result at all -> the song is skipped.
 
 Quota: two separate daily caps -- 10k units/day AND a hard 100 search.list
 calls/day. One call per uncached song, so a cold first run gets through ~100
@@ -194,7 +194,7 @@ _AUDIO_RE = re.compile(r"official audio|\baudio\b|lyric|visuali[sz]er", re.I)
 
 
 def kind_score(item):
-    """+1 per signal that the result is an audio 'song', -1 per music-video signal.
+    """+ per signal that the result is Audio (a track), - per Music-Video signal.
     Flip with PREFER_MV=1."""
     sn = item.get("snippet", {})
     title, ch = sn.get("title", ""), sn.get("channelTitle", "")
@@ -210,7 +210,7 @@ def kind_score(item):
 
 def match(song, artist):
     """One search.list call. Among the results, pick the best-matching title,
-    breaking ties toward an audio 'song' (or the MV if PREFER_MV=1). Weak picks
+    breaking ties toward Audio (or the MV if PREFER_MV=1). Weak picks
     (not well_matched) are still added but logged to unmatched.txt for review."""
     cands = [it for it in yt_search(f"{song} {artist}") if it.get("id", {}).get("videoId")]
     if not cands:
