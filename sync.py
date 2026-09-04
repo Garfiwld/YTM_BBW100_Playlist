@@ -9,16 +9,16 @@ Needs a Google OAuth client (type "TVs and Limited Input devices") and a token
 minted with `ytmusicapi oauth` (or any device flow for scope
 https://www.googleapis.com/auth/youtube).
 
+The rolling playlist is created up front and every match is inserted into it
+immediately, at its chart position -- so a run that dies partway still leaves a
+real (partial) playlist, and the next run tops it up. Off-chart tracks are pruned
+only after a full clean pass; the monthly archive snapshot likewise only fires on
+a complete run. Holdovers are not reordered unless FULL_REORDER=1 (wipe + refill).
+
 Quota: two separate daily caps -- 10k units/day AND a hard 100 search.list
 calls/day. Each uncached song costs 1-2 search calls, so a cold first run only
-gets through ~60-90 songs/day. On QuotaExceeded the script saves cache.json /
-unmatched.txt / config.json (minus last_synced_date) and exits; re-running the
-next day resumes from the cache.
-  - weekly: diff the rolling playlist (remove drops, insert new entries at their
-    rank position). Holdovers are NOT reordered.
-  - monthly: also snapshot an archive playlist.
-  - FULL_REORDER=1 forces a wipe+refill of the rolling playlist to re-sort
-    holdovers exactly; run it by hand on a quiet day.
+gets through ~60-90 songs/day. On QuotaExceeded the script saves all state
+(config.json minus last_synced_date) and exits; re-run the next day to resume.
 
 Env / .env:
   YTM_CLIENT_ID, YTM_CLIENT_SECRET   the OAuth client
@@ -217,28 +217,6 @@ def playlist_items(pid):
             return out
 
 
-def diff_rolling(pid, desired):
-    """Remove items not in `desired` (and duplicates); insert missing ones at their
-    rank position. Does not reorder holdovers."""
-    current = playlist_items(pid)
-    seen, removed = set(), 0
-    for item_id, vid in current:
-        if vid not in desired or vid in seen:
-            api("DELETE", "playlistItems", {"id": item_id})
-            removed += 1
-        else:
-            seen.add(vid)
-    added = 0
-    for i, vid in enumerate(desired):
-        if vid not in seen:
-            api("POST", "playlistItems", {"part": "snippet"}, {
-                "snippet": {"playlistId": pid, "position": i,
-                            "resourceId": {"kind": "youtube#video", "videoId": vid}},
-            })
-            added += 1
-    return added, removed
-
-
 def add_items(pid, video_ids):
     for vid in video_ids:
         api("POST", "playlistItems", {"part": "snippet"}, {
@@ -317,52 +295,72 @@ def main():
 
     def quota_stop(where):
         persist()
-        sys.exit(f"\nquota exhausted during {where}; state saved. Re-run tomorrow "
-                 f"-- it resumes from cache.json. (matched so far: {len(ordered)})")
+        sys.exit(f"\nquota hit during {where}; playlist has {len(ordered)} tracks so far, "
+                 f"state saved. Re-run tomorrow -- it resumes from cache.json.")
+
+    desc = f"Billboard Hot 100 - auto-updated weekly. Chart week: {date}"
+    full_reorder = bool(os.environ.get("FULL_REORDER"))
+
+    pid = config.get("rolling_playlist_id")
+    if not pid:
+        pid = api("POST", "playlists", {"part": "snippet,status"}, {
+            "snippet": {"title": ROLLING_NAME, "description": desc},
+            "status": {"privacyStatus": "public"},
+        })["id"]
+        config["rolling_playlist_id"] = pid
+        persist()
+        print(f"Created rolling playlist {pid}")
+
+    if full_reorder:
+        for item_id, _ in playlist_items(pid):
+            api("DELETE", "playlistItems", {"id": item_id})
+        existing = set()
+        print("FULL_REORDER: cleared rolling playlist")
+    else:
+        existing = {vid for _, vid in playlist_items(pid) if vid}
 
     retry_weak = bool(os.environ.get("RETRY_WEAK"))
     ordered, still_unmatched, skipped, seen = [], [], [], set()
-    for e in entries:
+    for i, e in enumerate(entries):
         song, artist = e["song"], e["artist"]
         key = f"{song}|{artist}"
         try:
             vid, well = resolve(key, song, artist, cache, prev_unmatched, retry_weak)
-        except QuotaExceeded:
-            quota_stop("search")
-
-        if not vid:
-            skipped.append(key)
-            print(f"SKIP  #{e['this_week']:>3} {key}")
-            continue
-
-        cache[key] = vid
-        if not well:
-            still_unmatched.append(f"{date}\t{key}\t{vid}")
-            print(f"WEAK  #{e['this_week']:>3} {key} -> {vid} (weak title match)")
-        if vid not in seen:
+            if not vid:
+                skipped.append(key)
+                print(f"SKIP  #{e['this_week']:>3} {key}")
+                continue
+            cache[key] = vid
+            if not well:
+                still_unmatched.append(f"{date}\t{key}\t{vid}")
+                print(f"WEAK  #{e['this_week']:>3} {key} -> {vid} (weak title match)")
+            if vid in seen:
+                continue
             seen.add(vid)
             ordered.append(vid)
+            if vid not in existing:
+                api("POST", "playlistItems", {"part": "snippet"}, {
+                    "snippet": {"playlistId": pid, "position": i,
+                                "resourceId": {"kind": "youtube#video", "videoId": vid}},
+                })
+                print(f"ADD   #{e['this_week']:>3} {key} -> {vid}")
+        except QuotaExceeded:
+            quota_stop("sync")
 
     if len(ordered) < 50:
         sys.exit(f"Only {len(ordered)} matches - aborting, looks broken.")
 
-    desc = f"Billboard Hot 100 - auto-updated weekly. Chart week: {date}"
+    # loop finished cleanly: drop tracks no longer on the chart, then archive
     try:
-        pid = config.get("rolling_playlist_id")
-        if not pid:
-            pid = create_playlist(ROLLING_NAME, desc, ordered)
-            config["rolling_playlist_id"] = pid
-            print(f"Created rolling playlist {pid}")
-        elif os.environ.get("FULL_REORDER"):
-            for item_id, _ in playlist_items(pid):
+        keep = set(ordered)
+        removed = 0
+        for item_id, vid in playlist_items(pid):
+            if vid not in keep:
                 api("DELETE", "playlistItems", {"id": item_id})
-            add_items(pid, ordered)
-            print(f"Rebuilt rolling playlist {pid} ({len(ordered)} tracks, full reorder)")
-        else:
-            added, removed = diff_rolling(pid, ordered)
-            print(f"Diffed rolling playlist {pid}: +{added} -{removed}")
+                removed += 1
         api("PUT", "playlists", {"part": "snippet"},
             {"id": pid, "snippet": {"title": ROLLING_NAME, "description": desc}})
+        print(f"Rolling playlist {pid}: {len(ordered)} tracks, -{removed} off-chart")
 
         month = date[:7]
         if config.get("last_archived_month") != month:
@@ -373,7 +371,7 @@ def main():
         else:
             print(f"Archive for {month} already done; skipping.")
     except QuotaExceeded:
-        quota_stop("playlist write")
+        quota_stop("cleanup")
 
     config["last_synced_date"] = date
     persist()

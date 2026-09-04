@@ -3,8 +3,11 @@
 Weekly job that mirrors the [Billboard Hot 100](https://www.billboard.com/charts/hot-100/)
 into YouTube Music:
 
-- **Rolling playlist** `Billboard Hot 100` — public, diffed each week toward the current chart.
-- **Monthly archive** `Billboard Hot 100 - YYYY-MM-DD` — public, one snapshot per calendar month.
+- **Rolling playlist** `Billboard Hot 100` — public, created once then topped up toward
+  the current chart every run (matches are inserted live, so a partial run still leaves
+  a usable playlist).
+- **Monthly archive** `Billboard Hot 100 - YYYY-MM-DD` — public, one snapshot per calendar
+  month, only on a run that finishes cleanly.
 
 Chart data comes from [`mhollingshead/billboard-hot-100`](https://github.com/mhollingshead/billboard-hot-100)
 (`recent.json`), not scraped. Each run saves that week's chart to
@@ -34,19 +37,18 @@ delete their lines from `unmatched.txt` and their keys from `cache.json`.
 YouTube Data API v3 has **two** daily caps: 10,000 units/day *and* a hard
 **100 `search.list` calls/day**. The search cap is what bites — an uncached song
 costs 1–2 calls, so a cold first run only gets through ~60–90 songs per day.
-On `quotaExceeded` the script saves `cache.json` / `unmatched.txt` / `config.json`
-(without `last_synced_date`) and exits; re-run the next day to resume. To stay inside:
+On `quotaExceeded` the script saves all state (`config.json` without
+`last_synced_date`) and exits; re-run the next day to resume — cached songs are
+skipped, so it only spends search calls on ones still missing.
 
-- **Weekly**: the rolling playlist is *diffed* — remove chart drops, insert new
-  entries at their rank position, holdovers left where they are. Only the churn
-  (~15 songs each way) plus searches for genuinely new titles ≈ 4,000 units.
-- **Monthly**: the first sync of a new calendar month also snapshots an archive
-  playlist (`last_archived_month` in `config.json` gates it) ≈ 5,000 units.
-- **`FULL_REORDER=1 python3 sync.py`**: wipes and refills the rolling playlist so
-  holdovers are re-sorted into exact rank order (~10,000 units). Run by hand on a
-  day the scheduled job isn't also archiving.
-- **First run** ≈ 15,000–20,000 units. If you hit `quotaExceeded`, just run it
-  again the next day — it resumes from `cache.json`.
+- **Weekly**: only the churn — insert chart entrants live, prune chart drops after
+  a clean pass, plus searches for genuinely new titles ≈ 4,000 units.
+- **Monthly**: the first clean sync of a new calendar month also snapshots an
+  archive playlist (`last_archived_month` in `config.json` gates it) ≈ 5,000 units.
+- **`FULL_REORDER=1 python3 sync.py`**: clears the rolling playlist and refills it
+  in exact rank order (~10,000 units). Run by hand on a quiet day.
+- **First run**: paced by the 100-search/day cap — ~60–90 songs/day, so ~2 days.
+  The playlist fills in as it goes.
 
 ## One-time setup
 
