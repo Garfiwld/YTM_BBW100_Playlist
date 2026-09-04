@@ -22,8 +22,8 @@ Runtime is Python stdlib only.
 
 For each uncached song — **one** `search.list` call (`q="song artist"`), take the top result:
 
-1. Its title fuzzy-matches (ratio ≥ 0.8) → clean match.
-2. It doesn't → still added to the playlist, but logged to `unmatched.txt` for a
+1. Its title contains the song name, or fuzzy-matches it (ratio ≥ 0.8) → clean match.
+2. Neither → still added to the playlist, but logged to `unmatched.txt` for a
    human to check and fix later.
 3. No result at all → skipped and logged; the playlist is just shorter that week.
 

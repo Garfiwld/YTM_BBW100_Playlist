@@ -8,10 +8,15 @@ assert norm("Sailor Song (Sped Up)") == "sailor song"
 assert ratio("Die With A Smile", "Die With a Smile") > 0.95
 assert ratio("APT.", "Some Unrelated Song") < 0.8
 
-# match(): one search call; well_matched iff top hit's title clears the threshold
+# well_matched: song name as substring of a real video title counts; junk doesn't
+assert sync.well_matched("Billie Eilish - BIRDS OF A FEATHER (Official Audio)", "Birds of a Feather")
+assert sync.well_matched("Die With a Smile", "Die With A Smile")
+assert not sync.well_matched("totally unrelated reaction video", "Some Song")
+
+# match(): one search call, first result with a videoId, well/weak per well_matched
 sync.yt_search = lambda q: [
     {"id": {}, "snippet": {"title": "no id here"}},
-    {"id": {"videoId": "vT"}, "snippet": {"title": "Birds Of A Feather"}},
+    {"id": {"videoId": "vT"}, "snippet": {"title": "Billie Eilish - Birds Of A Feather (Official Music Video)"}},
 ]
 assert sync.match("Birds of a Feather", "Billie Eilish") == ("vT", True)
 

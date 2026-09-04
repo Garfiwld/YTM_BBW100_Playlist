@@ -176,14 +176,21 @@ def resolve(key, song, artist, cache, prev_unmatched, retry_weak):
     return match(song, artist)
 
 
+def well_matched(title, song):
+    """The result's title should contain the song name outright, or be a close
+    fuzzy match. Video titles carry the artist + 'Official Audio' etc., so a plain
+    ratio is too harsh -- the substring check catches normal official uploads."""
+    nt, ns = norm(title), norm(song)
+    return (ns and ns in nt) or ratio(title, song) >= FUZZY_THRESHOLD
+
+
 def match(song, artist):
-    """One search.list call. Take the top result; well_matched = its title clears
-    FUZZY_THRESHOLD. Weak ones are still added to the playlist but logged to
-    unmatched.txt for a human to check later."""
+    """One search.list call. Take the top result. Weak (not well_matched) picks are
+    still added to the playlist but logged to unmatched.txt for a human to check."""
     for it in yt_search(f"{song} {artist}"):
         vid = it.get("id", {}).get("videoId")
         if vid:
-            return vid, ratio(it.get("snippet", {}).get("title", ""), song) >= FUZZY_THRESHOLD
+            return vid, well_matched(it.get("snippet", {}).get("title", ""), song)
     return None, False
 
 
