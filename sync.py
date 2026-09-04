@@ -26,8 +26,10 @@ Env / .env:
 
 State files (committed back by CI):
   charts/<date>.json -> the raw Billboard chart for that week, as fetched.
+  PLAYLISTS.md   -> human-readable list of every playlist URL, regenerated each run.
   config.json    -> {"rolling_playlist_id": str, "last_synced_date": "YYYY-MM-DD",
-                     "last_archived_month": "YYYY-MM"}
+                     "last_archived_month": "YYYY-MM",
+                     "archives": {"YYYY-MM-DD": playlist_id}}
   cache.json     -> {"song|artist": "videoId"}   resolved matches, reused across weeks
   unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (top hit's title
                     didn't fuzzy-match). Kept from cache like anything else;
@@ -253,6 +255,26 @@ def create_playlist(title, description, video_ids):
     return pid
 
 
+def playlist_url(pid):
+    return f"https://music.youtube.com/playlist?list={pid}"
+
+
+def write_playlists_md(config):
+    lines = ["# Playlists", ""]
+    rolling = config.get("rolling_playlist_id")
+    if rolling:
+        lines += [f"**Rolling — [{ROLLING_NAME}]({playlist_url(rolling)})**",
+                  f"<br>updated through chart week {config.get('last_synced_date', '?')}", ""]
+    archives = config.get("archives", {})
+    if archives:
+        lines += ["## Monthly archives", "", "| Chart week | Playlist |", "|---|---|"]
+        for d in sorted(archives, reverse=True):
+            lines.append(f"| {d} | [{ROLLING_NAME} - {d}]({playlist_url(archives[d])}) |")
+        lines.append("")
+    with open(os.path.join(HERE, "PLAYLISTS.md"), "w") as f:
+        f.write("\n".join(lines))
+
+
 # --- main -----------------------------------------------------------------
 
 def main():
@@ -285,6 +307,7 @@ def main():
         save_json(CACHE, cache)
         with open(UNMATCHED, "w") as f:
             f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
+        write_playlists_md(config)
 
     def quota_stop(where):
         persist()
@@ -339,6 +362,7 @@ def main():
         if config.get("last_archived_month") != month:
             archive = create_playlist(f"{ROLLING_NAME} - {date}", desc, ordered)
             config["last_archived_month"] = month
+            config.setdefault("archives", {})[date] = archive
             print(f"Created archive playlist {archive}")
         else:
             print(f"Archive for {month} already done; skipping.")

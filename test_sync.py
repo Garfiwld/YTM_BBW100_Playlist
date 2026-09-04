@@ -62,4 +62,13 @@ try:
 except AssertionError:
     pass
 
+# write_playlists_md: rolling link + archives newest-first
+import tempfile, os as _os
+sync.HERE = tempfile.mkdtemp()
+sync.write_playlists_md({"rolling_playlist_id": "PLr", "last_synced_date": "2026-09-05",
+                         "archives": {"2026-07-04": "PLa", "2026-09-05": "PLb"}})
+md = open(_os.path.join(sync.HERE, "PLAYLISTS.md")).read()
+assert "playlist?list=PLr" in md
+assert md.index("PLb") < md.index("PLa"), "archives not newest-first"
+
 print("ok")
