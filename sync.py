@@ -174,10 +174,18 @@ def yt_search(query):
     }).get("items", [])
 
 
+def resolve(key, song, artist, cache, prev_unmatched, retry_weak):
+    """(videoId, well_matched). Returns straight from cache without any network
+    call unless the song is uncached (or it's a weak match and retry_weak is set)."""
+    weak_cached = key in prev_unmatched
+    if key in cache and not (weak_cached and retry_weak):
+        return cache[key], not weak_cached
+    return match(song, artist)
+
+
 def match(song, artist):
     """(videoId, well_matched). well_matched=False => top hit didn't fuzzy-match the
-    title; logged to unmatched.txt and retried next week. At most 2 search calls
-    (search.list is capped at 100/day)."""
+    title; logged to unmatched.txt. At most 2 search calls (search.list caps at 100/day)."""
     vid = pick(yt_search(f"{song} {artist}"), song, check_title=True)
     if vid:
         return vid, True
@@ -283,14 +291,10 @@ def main():
     for e in entries:
         song, artist = e["song"], e["artist"]
         key = f"{song}|{artist}"
-        weak_cached = key in prev_unmatched
-        if key in cache and not (weak_cached and retry_weak):
-            vid, well = cache[key], not weak_cached
-        else:
-            try:
-                vid, well = match(song, artist)
-            except QuotaExceeded:
-                quota_stop("search")
+        try:
+            vid, well = resolve(key, song, artist, cache, prev_unmatched, retry_weak)
+        except QuotaExceeded:
+            quota_stop("search")
 
         if not vid:
             skipped.append(key)

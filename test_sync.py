@@ -42,4 +42,24 @@ assert deletes == {"i3", "i4"}, deletes
 ins = [c for c in calls if c[0] == "POST"]
 assert len(ins) == 1 and ins[0][3]["snippet"]["position"] == 0  # NEW at rank 0
 
+# resolve(): a cached song must NOT trigger a search (this is the resume guarantee)
+def boom(*a, **k):
+    raise AssertionError("search called for a cached song")
+
+
+sync.yt_search = boom
+cache = {"Song A|Artist": "vidA", "Weak B|Artist": "vidB"}
+prev_unmatched = {"Weak B|Artist"}
+
+assert sync.resolve("Song A|Artist", "Song A", "Artist", cache, prev_unmatched, False) == ("vidA", True)
+# weak match: still cache-only, still flagged as not-well-matched
+assert sync.resolve("Weak B|Artist", "Weak B", "Artist", cache, prev_unmatched, False) == ("vidB", False)
+# RETRY_WEAK on -> weak match falls through to search (boom); well-matched cached still safe
+assert sync.resolve("Song A|Artist", "Song A", "Artist", cache, prev_unmatched, True) == ("vidA", True)
+try:
+    sync.resolve("Weak B|Artist", "Weak B", "Artist", cache, prev_unmatched, True)
+    raise SystemExit("expected search for weak match under RETRY_WEAK")
+except AssertionError:
+    pass
+
 print("ok")
