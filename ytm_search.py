@@ -93,6 +93,9 @@ def scrape(page, query, filt):
 COLS = ["query", "filter", "rank", "videoId", "title", "subtitle", "ts"]
 
 
+TOP_CSV = os.path.join(HERE, "ytm_top.csv")
+
+
 def dump_csv():
     con = sqlite3.connect(DB)
     rows = con.execute(f"SELECT {','.join(COLS)} FROM ytm_hit "
@@ -105,6 +108,30 @@ def dump_csv():
     print(f"wrote {CSV} ({len(rows)} rows)")
 
 
+def top_by_filter():
+    """{query: {filter: (videoId, title)}} -- the rank-0 hit of each filter."""
+    con = sqlite3.connect(DB)
+    out = {}
+    for q, flt, v, t in con.execute(
+            "SELECT query, filter, videoId, title FROM ytm_hit WHERE rank=0"):
+        out.setdefault(q, {})[flt] = (v, t)
+    con.close()
+    return out
+
+
+def dump_top():
+    """ytm_top.csv -- one row per query: rank-0 videoId from Songs and from Videos."""
+    top = top_by_filter()
+    with open(TOP_CSV, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["query", "songs_videoId", "songs_title", "videos_videoId", "videos_title"])
+        for q in sorted(top):
+            s = top[q].get("Songs", ("", ""))
+            v = top[q].get("Videos", ("", ""))
+            w.writerow([q, s[0], s[1], v[0], v[1]])
+    print(f"wrote {TOP_CSV} ({len(top)} queries)")
+
+
 def merge_cache(chart_path, force):
     """Fold the rank-0 Songs hit for each chart row into ../cache.json (+ unmatched.txt,
     matches.csv, matches.db). No browser -- reads the existing ytm_search.db."""
@@ -112,10 +139,7 @@ def merge_cache(chart_path, force):
 
     chart = json.load(open(chart_path))
     date = chart["date"]
-    con = sqlite3.connect(DB)
-    top = {q: (v, t) for q, v, t in con.execute(
-        "SELECT query, videoId, title FROM ytm_hit WHERE filter='Songs' AND rank=0")}
-    con.close()
+    top = top_by_filter()  # {query: {"Songs": (id,title), "Videos": (id,title)}}
 
     cache = sync.load_json(sync.CACHE, {})
     weak_lines, added, weak_n, skipped = [], [], 0, 0
@@ -130,16 +154,17 @@ def merge_cache(chart_path, force):
         if key in cache and not force:
             continue
         hit = top.get(f"{row['song']} {row['artist']}")
-        if not hit:
+        if not hit or "Songs" not in hit:
             skipped += 1
             continue
-        vid, title = hit
-        cache[key] = {"videoId": vid, "audio": vid, "mv": None}
-        if sync.well_matched(title, row["song"]):
+        audio, atitle = hit["Songs"]
+        mv = hit.get("Videos", (None, ""))[0]
+        cache[key] = {"videoId": audio, "audio": audio, "mv": mv}
+        if sync.well_matched(atitle, row["song"]):
             weak_keys.discard(key)
             weak_lines = [l for l in weak_lines if l.split("\t")[1] != key]
         elif key not in weak_keys:
-            weak_lines.append(f"{date}\t{key}\t{vid}")
+            weak_lines.append(f"{date}\t{key}\t{audio}")
             weak_n += 1
         added.append(key)
 
@@ -166,7 +191,8 @@ def main():
     args = ap.parse_args()
 
     if args.dump_csv:
-        return dump_csv()
+        dump_csv()
+        return dump_top()
     if args.merge_cache:
         if not args.from_chart:
             sys.exit("--merge-cache needs --from-chart")
@@ -216,6 +242,7 @@ def main():
     con.close()
     print(f"\nwrote {DB}")
     dump_csv()
+    dump_top()
 
 
 if __name__ == "__main__":

@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 ytm_search.csv
 ytm_search.db
+ytm_top.csv
