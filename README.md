@@ -118,6 +118,27 @@ Runs every Wednesday 20:00 Asia/Bangkok (`0 13 * * 3` UTC) and on manual dispatc
 Commits the updated state files back. If `recent.json`'s `date` hasn't changed since
 `last_synced_date`, the run is a no-op.
 
+## ytm_search.py — Playwright scraper (optional)
+
+A standalone tool that gets videoIds straight from the YouTube Music web UI, past
+the OAuth-400 and the Data-API search cap. It loads
+`music.youtube.com/search?q=…`, clicks the **Songs** (or **Videos**) filter chip,
+captures the `/youtubei/v1/search` XHR that fires, and reads every
+`…musicResponsiveListItemRenderer.playlistItemData.videoId`.
+
+```bash
+pip install playwright && playwright install chromium
+
+python3 ytm_search.py "Birds of a Feather Billie Eilish"
+python3 ytm_search.py --from-chart charts/2026-09-05.json --unmatched-only
+python3 ytm_search.py --videos --headful "some query"
+```
+
+Writes SQLite `ytm_search.db`, table `ytm_hit(query, filter, rank, videoId, title,
+subtitle, ts)` with `UNIQUE(query, filter, videoId)`. Not wired into the scheduled
+job (CI has no browser) — run it locally, then copy the good ids into `cache.json`
+via the dashboard or by hand.
+
 ## Review dashboard
 
 `index.html` is a static, dependency-free page: pick any chart week (1958→now),
