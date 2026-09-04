@@ -95,6 +95,19 @@ const ytm  = id => `https://music.youtube.com/watch?v=${id}`;
 const srch = q  => `https://music.youtube.com/search?q=${encodeURIComponent(q)}`;
 const esc  = s  => (s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const b64  = s  => btoa(unescape(encodeURIComponent(s)));
+function videoIdOf(v) {                       // accept a bare id or any YT / YT Music URL
+  v = (v || '').trim();
+  if (/^[\w-]{11}$/.test(v)) return v;
+  try {
+    const u = new URL(v);
+    const q = u.searchParams.get('v');
+    if (q && /^[\w-]{11}$/.test(q)) return q;
+    const m = u.pathname.match(/\/(?:shorts|embed|live)\/([\w-]{11})/) ||
+              (u.hostname === 'youtu.be' && u.pathname.match(/^\/([\w-]{11})/));
+    if (m) return m[1];
+  } catch {}
+  return '';
+}
 const unb64 = s => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
 
 const weekSel = document.getElementById('week');
@@ -157,7 +170,7 @@ function render() {
         <div class="links">
           <a href="${srch(q)}">🔎 search</a>
           ${cur ? `<a href="${ytm(cur)}">▶ YT Music</a>` : ''}
-          <input type="text" class="vid" value="${esc(cur)}" placeholder="videoId" data-key="${esc(key)}">
+          <input type="text" class="vid" value="${esc(cur)}" placeholder="videoId or URL" data-key="${esc(key)}">
         </div>
       </div>
     </div>`;
@@ -167,7 +180,10 @@ function render() {
     inp.addEventListener('change', () => {
       const key = inp.dataset.key;
       const orig = (chart.data.find(d => `${d.song}|${d.artist}` === key) || {}).videoId || '';
-      const val = inp.value.trim();
+      const raw = inp.value.trim();
+      const val = videoIdOf(raw);
+      if (raw && !val) { inp.setCustomValidity('not a videoId or YouTube URL'); inp.reportValidity(); return; }
+      inp.setCustomValidity('');
       if (val && val !== orig) staged.set(key, val);
       else staged.delete(key);
       refreshSaveBar();
