@@ -145,7 +145,7 @@ def api(method, path, params=None, body=None):
         data = json.dumps(body).encode()
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
-    for attempt in range(4):
+    for attempt in range(6):
         try:
             with urllib.request.urlopen(req) as r:
                 text = r.read().decode()
@@ -154,9 +154,10 @@ def api(method, path, params=None, body=None):
             payload = e.read().decode()
             if e.code == 429 or "quotaExceeded" in payload:
                 raise QuotaExceeded(f"{method} {path}: {payload[:200]}")
-            if e.code in (403, 500, 503) and attempt < 3:
-                time.sleep(2 ** attempt)
-                continue
+            if e.code in (409, 500, 503) or (e.code == 403 and "SERVICE_UNAVAILABLE" in payload):
+                if attempt < 5:
+                    time.sleep(2 ** attempt)
+                    continue
             sys.exit(f"{method} {path} -> HTTP {e.code}: {payload}")
 
 
@@ -282,8 +283,10 @@ def main():
         sys.exit(f"\nquota hit during {where}; playlist has {len(ordered)} tracks so far, "
                  f"state saved. Re-run tomorrow -- it resumes from cache.json.")
 
-    desc = f"Billboard Hot 100 - auto-updated weekly. Chart week: {date}"
+    retry_weak = bool(os.environ.get("RETRY_WEAK"))
     full_reorder = bool(os.environ.get("FULL_REORDER"))
+    desc = f"Billboard Hot 100 - auto-updated weekly. Chart week: {date}"
+    ordered, still_unmatched, skipped, seen = [], [], [], set()
 
     pid = config.get("rolling_playlist_id")
     if not pid:
@@ -303,8 +306,6 @@ def main():
     else:
         existing = {vid for _, vid in playlist_items(pid) if vid}
 
-    retry_weak = bool(os.environ.get("RETRY_WEAK"))
-    ordered, still_unmatched, skipped, seen = [], [], [], set()
     for i, e in enumerate(entries):
         song, artist = e["song"], e["artist"]
         key = f"{song}|{artist}"
@@ -330,6 +331,9 @@ def main():
                 print(f"ADD   #{e['this_week']:>3} {key} -> {vid}")
         except QuotaExceeded:
             quota_stop("sync")
+        except SystemExit:
+            persist()  # keep the matches we already resolved before bailing
+            raise
 
     if len(ordered) < 50:
         sys.exit(f"Only {len(ordered)} matches - aborting, looks broken.")
