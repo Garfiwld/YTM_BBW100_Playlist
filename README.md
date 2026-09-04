@@ -27,7 +27,8 @@ For each of the 100 songs:
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → new project.
 2. APIs & Services → Enable **YouTube Data API v3**.
-3. OAuth consent screen → External → add your Google account as a **Test user**.
+3. OAuth consent screen → External → add the Google account that will own the
+   playlists as a **Test user**.
 4. Credentials → Create credentials → OAuth client ID → type **TVs and Limited Input devices**.
 5. Note the **Client ID** and **Client secret**.
 
@@ -44,9 +45,8 @@ Produces `oauth.json`.
 ### 3. Run once locally to bootstrap
 
 ```bash
-export YTM_CLIENT_ID=YOUR_ID
-export YTM_CLIENT_SECRET=YOUR_SECRET
-python sync.py
+cp .env.example .env      # then edit .env with your client id/secret
+python sync.py            # sync.py auto-loads .env
 ```
 
 First run creates the rolling playlist and writes its id into `config.json`. Commit

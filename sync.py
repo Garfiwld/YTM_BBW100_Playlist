@@ -23,6 +23,23 @@ ROLLING_NAME = "Billboard Hot 100"
 FUZZY_THRESHOLD = 0.6
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def _load_dotenv():
+    try:
+        with open(os.path.join(HERE, ".env")) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+
+_load_dotenv()
+
 CONFIG = os.path.join(HERE, "config.json")
 CACHE = os.path.join(HERE, "cache.json")
 UNMATCHED = os.path.join(HERE, "unmatched.txt")
