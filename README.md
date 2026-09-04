@@ -20,12 +20,13 @@ Runtime is Python stdlib only.
 
 ## How matching works
 
-For each uncached song — **one** `search.list` call (`q="song artist"`), take the top result:
+For each uncached song — **one** `search.list` call, `q="song artist"`, restricted
+to the **Music category** (`videoCategoryId=10`) — take the top result:
 
 1. Its title contains the song name, or fuzzy-matches it (ratio ≥ 0.8) → clean match.
 2. Neither → still added to the playlist, but logged to `unmatched.txt` for a
    human to check and fix later.
-3. No result at all → skipped and logged; the playlist is just shorter that week.
+3. No music result at all → skipped and logged; the playlist is just shorter that week.
 
 `cache.json` remembers resolved `song|artist → videoId`; a cached song is **never
 re-searched**, including weak matches in `unmatched.txt`. To force weak entries to

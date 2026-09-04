@@ -15,9 +15,10 @@ real (partial) playlist, and the next run tops it up. Off-chart tracks are prune
 only after a full clean pass; the monthly archive snapshot likewise only fires on
 a complete run. Holdovers are not reordered unless FULL_REORDER=1 (wipe + refill).
 
-Matching: one search.list call per uncached song -- top result wins. If its title
-clears FUZZY_THRESHOLD it's a clean match; otherwise it's still added but logged to
-unmatched.txt for a human to review. No result at all -> skipped.
+Matching: one search.list call per uncached song, restricted to the Music category
+(videoCategoryId=10). Top result wins; if its title contains the song name or
+clears FUZZY_THRESHOLD it's a clean match, otherwise it's still added but logged to
+unmatched.txt for review. No music result at all -> the song is skipped.
 
 Quota: two separate daily caps -- 10k units/day AND a hard 100 search.list
 calls/day. One call per uncached song, so a cold first run gets through ~100
@@ -162,8 +163,10 @@ def api(method, path, params=None, body=None):
 
 
 def yt_search(query):
+    # videoCategoryId 10 = Music -> only song/music results
     return api("GET", "search", {
-        "part": "snippet", "type": "video", "maxResults": "5", "q": query,
+        "part": "snippet", "type": "video", "videoCategoryId": "10",
+        "regionCode": "US", "maxResults": "5", "q": query,
     }).get("items", [])
 
 
