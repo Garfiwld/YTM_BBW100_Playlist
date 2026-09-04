@@ -1,0 +1,805 @@
+{
+  "date": "2026-02-14",
+  "data": [
+    {
+      "song": "Choosin' Texas",
+      "artist": "Ella Langley",
+      "this_week": 1,
+      "last_week": 2,
+      "peak_position": 1,
+      "weeks_on_chart": 16
+    },
+    {
+      "song": "Man I Need",
+      "artist": "Olivia Dean",
+      "this_week": 2,
+      "last_week": 3,
+      "peak_position": 2,
+      "weeks_on_chart": 24
+    },
+    {
+      "song": "Ordinary",
+      "artist": "Alex Warren",
+      "this_week": 3,
+      "last_week": 7,
+      "peak_position": 1,
+      "weeks_on_chart": 51
+    },
+    {
+      "song": "I Just Might",
+      "artist": "Bruno Mars",
+      "this_week": 4,
+      "last_week": 6,
+      "peak_position": 1,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Golden",
+      "artist": "HUNTR/X: EJAE, Audrey Nuna & REI AMI",
+      "this_week": 5,
+      "last_week": 4,
+      "peak_position": 1,
+      "weeks_on_chart": 33
+    },
+    {
+      "song": "The Great Divide",
+      "artist": "Noah Kahan",
+      "this_week": 6,
+      "last_week": null,
+      "peak_position": 6,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "The Fate Of Ophelia",
+      "artist": "Taylor Swift",
+      "this_week": 7,
+      "last_week": 5,
+      "peak_position": 1,
+      "weeks_on_chart": 18
+    },
+    {
+      "song": "Back To Friends",
+      "artist": "sombr",
+      "this_week": 8,
+      "last_week": 8,
+      "peak_position": 7,
+      "weeks_on_chart": 45
+    },
+    {
+      "song": "Folded",
+      "artist": "Kehlani",
+      "this_week": 9,
+      "last_week": 9,
+      "peak_position": 6,
+      "weeks_on_chart": 34
+    },
+    {
+      "song": "DTMF",
+      "artist": "Bad Bunny",
+      "this_week": 10,
+      "last_week": null,
+      "peak_position": 2,
+      "weeks_on_chart": 21
+    },
+    {
+      "song": "Opalite",
+      "artist": "Taylor Swift",
+      "this_week": 11,
+      "last_week": 10,
+      "peak_position": 2,
+      "weeks_on_chart": 18
+    },
+    {
+      "song": "Aperture",
+      "artist": "Harry Styles",
+      "this_week": 12,
+      "last_week": 1,
+      "peak_position": 1,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "So Easy (To Fall In Love)",
+      "artist": "Olivia Dean",
+      "this_week": 13,
+      "last_week": 16,
+      "peak_position": 13,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "Body",
+      "artist": "Don Toliver",
+      "this_week": 14,
+      "last_week": null,
+      "peak_position": 14,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Mutt",
+      "artist": "Leon Thomas",
+      "this_week": 15,
+      "last_week": 12,
+      "peak_position": 6,
+      "weeks_on_chart": 52
+    },
+    {
+      "song": "End Of Beginning",
+      "artist": "Djo",
+      "this_week": 16,
+      "last_week": 11,
+      "peak_position": 6,
+      "weeks_on_chart": 27
+    },
+    {
+      "song": "E85",
+      "artist": "Don Toliver",
+      "this_week": 17,
+      "last_week": null,
+      "peak_position": 17,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Where Is My Husband!",
+      "artist": "RAYE",
+      "this_week": 18,
+      "last_week": 13,
+      "peak_position": 13,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "Baile Inolvidable",
+      "artist": "Bad Bunny",
+      "this_week": 19,
+      "last_week": null,
+      "peak_position": 3,
+      "weeks_on_chart": 21
+    },
+    {
+      "song": "What You Saying",
+      "artist": "Lil Uzi Vert",
+      "this_week": 20,
+      "last_week": 14,
+      "peak_position": 12,
+      "weeks_on_chart": 6
+    },
+    {
+      "song": "Yukon",
+      "artist": "Justin Bieber",
+      "this_week": 21,
+      "last_week": 31,
+      "peak_position": 17,
+      "weeks_on_chart": 30
+    },
+    {
+      "song": "Daisies",
+      "artist": "Justin Bieber",
+      "this_week": 22,
+      "last_week": 18,
+      "peak_position": 2,
+      "weeks_on_chart": 29
+    },
+    {
+      "song": "I Got Better",
+      "artist": "Morgan Wallen",
+      "this_week": 23,
+      "last_week": 15,
+      "peak_position": 7,
+      "weeks_on_chart": 34
+    },
+    {
+      "song": "20 Cigarettes",
+      "artist": "Morgan Wallen",
+      "this_week": 24,
+      "last_week": 17,
+      "peak_position": 15,
+      "weeks_on_chart": 37
+    },
+    {
+      "song": "ATM",
+      "artist": "Don Toliver",
+      "this_week": 25,
+      "last_week": 63,
+      "peak_position": 25,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Die On This Hill",
+      "artist": "Sienna Spiro",
+      "this_week": 26,
+      "last_week": 19,
+      "peak_position": 19,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "Sleepless In A Hotel Room",
+      "artist": "Luke Combs",
+      "this_week": 27,
+      "last_week": 21,
+      "peak_position": 17,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Nuevayol",
+      "artist": "Bad Bunny",
+      "this_week": 28,
+      "last_week": null,
+      "peak_position": 8,
+      "weeks_on_chart": 21
+    },
+    {
+      "song": "Secondhand",
+      "artist": "Don Toliver Featuring Rema",
+      "this_week": 29,
+      "last_week": null,
+      "peak_position": 29,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Rendezvous",
+      "artist": "Don Toliver Featuring Yeat",
+      "this_week": 30,
+      "last_week": null,
+      "peak_position": 30,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "McArthur",
+      "artist": "HARDY, Eric Church, Morgan Wallen & Tim McGraw",
+      "this_week": 31,
+      "last_week": null,
+      "peak_position": 31,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "wgft",
+      "artist": "Gunna Featuring Burna Boy",
+      "this_week": 32,
+      "last_week": 20,
+      "peak_position": 16,
+      "weeks_on_chart": 26
+    },
+    {
+      "song": "A Couple Minutes",
+      "artist": "Olivia Dean",
+      "this_week": 33,
+      "last_week": 32,
+      "peak_position": 26,
+      "weeks_on_chart": 15
+    },
+    {
+      "song": "Tit For Tat",
+      "artist": "Tate McRae",
+      "this_week": 34,
+      "last_week": 23,
+      "peak_position": 3,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "Tiramisu",
+      "artist": "Don Toliver",
+      "this_week": 35,
+      "last_week": null,
+      "peak_position": 35,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Rosary",
+      "artist": "Don Toliver Featuring Travis Scott",
+      "this_week": 36,
+      "last_week": null,
+      "peak_position": 36,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Dandelion",
+      "artist": "Ella Langley",
+      "this_week": 37,
+      "last_week": null,
+      "peak_position": 37,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "It Depends",
+      "artist": "Chris Brown Featuring Bryson Tiller",
+      "this_week": 38,
+      "last_week": 24,
+      "peak_position": 16,
+      "weeks_on_chart": 27
+    },
+    {
+      "song": "Amen",
+      "artist": "Shaboozey & Jelly Roll",
+      "this_week": 39,
+      "last_week": 27,
+      "peak_position": 27,
+      "weeks_on_chart": 39
+    },
+    {
+      "song": "Stateside",
+      "artist": "PinkPantheress With Zara Larsson",
+      "this_week": 40,
+      "last_week": 30,
+      "peak_position": 30,
+      "weeks_on_chart": 5
+    },
+    {
+      "song": "Call Back",
+      "artist": "Don Toliver",
+      "this_week": 41,
+      "last_week": null,
+      "peak_position": 41,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "EOO",
+      "artist": "Bad Bunny",
+      "this_week": 42,
+      "last_week": null,
+      "peak_position": 24,
+      "weeks_on_chart": 31
+    },
+    {
+      "song": "Better Me For You (Brown Eyes)",
+      "artist": "Max McNown",
+      "this_week": 43,
+      "last_week": 26,
+      "peak_position": 26,
+      "weeks_on_chart": 34
+    },
+    {
+      "song": "Gemstone",
+      "artist": "Don Toliver",
+      "this_week": 44,
+      "last_week": null,
+      "peak_position": 44,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "House Again",
+      "artist": "Hudson Westbrook",
+      "this_week": 45,
+      "last_week": 35,
+      "peak_position": 33,
+      "weeks_on_chart": 42
+    },
+    {
+      "song": "The Fall",
+      "artist": "Cody Johnson",
+      "this_week": 46,
+      "last_week": 34,
+      "peak_position": 34,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "Voy A Llevarte Pa PR",
+      "artist": "Bad Bunny",
+      "this_week": 47,
+      "last_week": 85,
+      "peak_position": 17,
+      "weeks_on_chart": 17
+    },
+    {
+      "song": "Excavator",
+      "artist": "Don Toliver",
+      "this_week": 48,
+      "last_week": null,
+      "peak_position": 48,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Opposite",
+      "artist": "Don Toliver",
+      "this_week": 49,
+      "last_week": null,
+      "peak_position": 49,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Let 'Em Know",
+      "artist": "T.I.",
+      "this_week": 50,
+      "last_week": 83,
+      "peak_position": 50,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Days Like These",
+      "artist": "Luke Combs",
+      "this_week": 51,
+      "last_week": 39,
+      "peak_position": 39,
+      "weeks_on_chart": 15
+    },
+    {
+      "song": "Hell At Night",
+      "artist": "BigXthaPlug Featuring Ella Langley",
+      "this_week": 52,
+      "last_week": 28,
+      "peak_position": 26,
+      "weeks_on_chart": 26
+    },
+    {
+      "song": "Lush Life",
+      "artist": "Zara Larsson",
+      "this_week": 53,
+      "last_week": 36,
+      "peak_position": 36,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "How Far Does A Goodbye Go",
+      "artist": "Jason Aldean",
+      "this_week": 54,
+      "last_week": 37,
+      "peak_position": 37,
+      "weeks_on_chart": 17
+    },
+    {
+      "song": "12 To 12",
+      "artist": "sombr",
+      "this_week": 55,
+      "last_week": 46,
+      "peak_position": 41,
+      "weeks_on_chart": 25
+    },
+    {
+      "song": "4 Raws",
+      "artist": "EsDeeKid",
+      "this_week": 56,
+      "last_week": 33,
+      "peak_position": 28,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "Travelin' Soldier",
+      "artist": "Cody Johnson",
+      "this_week": 57,
+      "last_week": 58,
+      "peak_position": 12,
+      "weeks_on_chart": 13
+    },
+    {
+      "song": "I Ain't Coming Back",
+      "artist": "Morgan Wallen Featuring Post Malone",
+      "this_week": 58,
+      "last_week": 50,
+      "peak_position": 8,
+      "weeks_on_chart": 34
+    },
+    {
+      "song": "All The Signs",
+      "artist": "Don Toliver Featuring Teezo Touchdown",
+      "this_week": 59,
+      "last_week": null,
+      "peak_position": 59,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Tuition",
+      "artist": "Don Toliver",
+      "this_week": 60,
+      "last_week": null,
+      "peak_position": 60,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Chanel",
+      "artist": "Tyla",
+      "this_week": 61,
+      "last_week": 43,
+      "peak_position": 43,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "Plastic Cigarette",
+      "artist": "Zach Bryan",
+      "this_week": 62,
+      "last_week": 22,
+      "peak_position": 13,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Long Way To Calabasas",
+      "artist": "Don Toliver",
+      "this_week": 63,
+      "last_week": null,
+      "peak_position": 63,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "K9",
+      "artist": "Don Toliver Featuring SahBabii",
+      "this_week": 64,
+      "last_week": null,
+      "peak_position": 64,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Say Why",
+      "artist": "Zach Bryan",
+      "this_week": 65,
+      "last_week": 45,
+      "peak_position": 25,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Gone Gone Gone",
+      "artist": "David Guetta, Teddy Swims & Tones And I",
+      "this_week": 66,
+      "last_week": 51,
+      "peak_position": 51,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "When Did You Get Hot?",
+      "artist": "Sabrina Carpenter",
+      "this_week": 67,
+      "last_week": 47,
+      "peak_position": 17,
+      "weeks_on_chart": 21
+    },
+    {
+      "song": "FDO",
+      "artist": "Pooh Shiesty",
+      "this_week": 68,
+      "last_week": 49,
+      "peak_position": 12,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "ErrTime",
+      "artist": "Cardi B",
+      "this_week": 69,
+      "last_week": 48,
+      "peak_position": 43,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "TMU",
+      "artist": "Don Toliver",
+      "this_week": 70,
+      "last_week": null,
+      "peak_position": 70,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "I Thought I Saw Your Face Today",
+      "artist": "She & Him",
+      "this_week": 71,
+      "last_week": 44,
+      "peak_position": 40,
+      "weeks_on_chart": 9
+    },
+    {
+      "song": "Nice To Each Other",
+      "artist": "Olivia Dean",
+      "this_week": 72,
+      "last_week": 65,
+      "peak_position": 65,
+      "weeks_on_chart": 15
+    },
+    {
+      "song": "You Stole The Show",
+      "artist": "Sienna Spiro",
+      "this_week": 73,
+      "last_week": 55,
+      "peak_position": 55,
+      "weeks_on_chart": 5
+    },
+    {
+      "song": "Pop Dat Thang",
+      "artist": "DaBaby",
+      "this_week": 74,
+      "last_week": 78,
+      "peak_position": 74,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Beautiful Things",
+      "artist": "Megan Moroney",
+      "this_week": 75,
+      "last_week": 54,
+      "peak_position": 54,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "Favorite Country Song",
+      "artist": "HARDY",
+      "this_week": 76,
+      "last_week": 38,
+      "peak_position": 38,
+      "weeks_on_chart": 15
+    },
+    {
+      "song": "Brunette",
+      "artist": "Tucker Wetmore",
+      "this_week": 77,
+      "last_week": 53,
+      "peak_position": 53,
+      "weeks_on_chart": 6
+    },
+    {
+      "song": "Sweet Home",
+      "artist": "Don Toliver",
+      "this_week": 78,
+      "last_week": null,
+      "peak_position": 78,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Who Knows",
+      "artist": "Daniel Caesar",
+      "this_week": 79,
+      "last_week": 52,
+      "peak_position": 52,
+      "weeks_on_chart": 6
+    },
+    {
+      "song": "Let Alone The One You Love",
+      "artist": "Olivia Dean",
+      "this_week": 80,
+      "last_week": 72,
+      "peak_position": 71,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "Fame Is A Gun",
+      "artist": "Addison Rae",
+      "this_week": 81,
+      "last_week": 77,
+      "peak_position": 73,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "Pleasure's Mine",
+      "artist": "Don Toliver",
+      "this_week": 82,
+      "last_week": null,
+      "peak_position": 82,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Stay Here 4 Life",
+      "artist": "A$AP Rocky Featuring Brent Faiyaz",
+      "this_week": 83,
+      "last_week": 40,
+      "peak_position": 23,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "Midnight Sun",
+      "artist": "Zara Larsson",
+      "this_week": 84,
+      "last_week": 69,
+      "peak_position": 69,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "How It's Done",
+      "artist": "HUNTR/X: EJAE, Audrey Nuna & REI AMI",
+      "this_week": 85,
+      "last_week": 59,
+      "peak_position": 8,
+      "weeks_on_chart": 28
+    },
+    {
+      "song": "Feed The Streets",
+      "artist": "Rod Wave",
+      "this_week": 86,
+      "last_week": null,
+      "peak_position": 86,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Bloodline",
+      "artist": "Alex Warren With Jelly Roll",
+      "this_week": 87,
+      "last_week": 61,
+      "peak_position": 32,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "Dracula",
+      "artist": "Tame Impala",
+      "this_week": 88,
+      "last_week": 60,
+      "peak_position": 30,
+      "weeks_on_chart": 19
+    },
+    {
+      "song": "Mrs. Trendsetter",
+      "artist": "Lil Baby",
+      "this_week": 89,
+      "last_week": 64,
+      "peak_position": 64,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "Bruce Wayne",
+      "artist": "YoungBoy Never Broke Again",
+      "this_week": 90,
+      "last_week": 57,
+      "peak_position": 57,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "Raindance",
+      "artist": "Dave & Tems",
+      "this_week": 91,
+      "last_week": 89,
+      "peak_position": 89,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Change My Mind",
+      "artist": "Riley Green",
+      "this_week": 92,
+      "last_week": 66,
+      "peak_position": 66,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "What You Need",
+      "artist": "Tems",
+      "this_week": 93,
+      "last_week": null,
+      "peak_position": 93,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Sienna",
+      "artist": "The Marias",
+      "this_week": 94,
+      "last_week": 75,
+      "peak_position": 74,
+      "weeks_on_chart": 18
+    },
+    {
+      "song": "Ends Of The Earth",
+      "artist": "Ty Myers",
+      "this_week": 95,
+      "last_week": 81,
+      "peak_position": 81,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Baby Steps",
+      "artist": "Olivia Dean",
+      "this_week": 96,
+      "last_week": null,
+      "peak_position": 91,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "It Won't Be Long",
+      "artist": "George Birge",
+      "this_week": 97,
+      "last_week": 56,
+      "peak_position": 56,
+      "weeks_on_chart": 5
+    },
+    {
+      "song": "Ain't A Bad Life",
+      "artist": "Thomas Rhett Featuring Jordan Davis",
+      "this_week": 98,
+      "last_week": 71,
+      "peak_position": 71,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Elizabeth Taylor",
+      "artist": "Taylor Swift",
+      "this_week": 99,
+      "last_week": 79,
+      "peak_position": 3,
+      "weeks_on_chart": 18
+    },
+    {
+      "song": "Darlin'",
+      "artist": "Chase Matthew",
+      "this_week": 100,
+      "last_week": 73,
+      "peak_position": 52,
+      "weeks_on_chart": 19
+    }
+  ]
+}

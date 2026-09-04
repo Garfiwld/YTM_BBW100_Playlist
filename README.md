@@ -110,9 +110,20 @@ Commits the updated state files back. If `recent.json`'s `date` hasn't changed s
 python3 test_sync.py
 ```
 
+## Backfilling history
+
+`charts/` was seeded with every weekly chart back to 1958 via:
+
+```bash
+python3 backfill_charts.py            # all of it
+python3 backfill_charts.py --since 2000
+```
+
+It downloads `all.json` and splits it; no API quota. Re-run any time to pick up
+weeks added since (existing files are skipped).
+
 ## Later
 
-- **Backfill** — `sync.py` only handles the current chart. Historical archive
-  playlists (iterate `date/YYYY-MM-DD.json` in `mhollingshead/billboard-hot-100`,
-  newest → oldest) are not built yet. ~5,000 quota units per archive, so any
-  backfill has to be paced across days.
+- **Backfill playlists** — only the chart *JSON* is backfilled. Historical archive
+  *playlists* (one per past week/month) are not built yet: ~5,000 quota units each,
+  so it has to be paced across days.

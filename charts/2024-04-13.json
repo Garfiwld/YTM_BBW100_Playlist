@@ -1,0 +1,805 @@
+{
+  "date": "2024-04-13",
+  "data": [
+    {
+      "song": "Like That",
+      "artist": "Future, Metro Boomin & Kendrick Lamar",
+      "this_week": 1,
+      "last_week": 1,
+      "peak_position": 1,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Texas Hold 'Em",
+      "artist": "Beyonce",
+      "this_week": 2,
+      "last_week": 11,
+      "peak_position": 1,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "Beautiful Things",
+      "artist": "Benson Boone",
+      "this_week": 3,
+      "last_week": 3,
+      "peak_position": 2,
+      "weeks_on_chart": 11
+    },
+    {
+      "song": "Too Sweet",
+      "artist": "Hozier",
+      "this_week": 4,
+      "last_week": 5,
+      "peak_position": 4,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Lose Control",
+      "artist": "Teddy Swims",
+      "this_week": 5,
+      "last_week": 4,
+      "peak_position": 1,
+      "weeks_on_chart": 34
+    },
+    {
+      "song": "II Most Wanted",
+      "artist": "Beyonce & Miley Cyrus",
+      "this_week": 6,
+      "last_week": null,
+      "peak_position": 6,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Jolene",
+      "artist": "Beyonce",
+      "this_week": 7,
+      "last_week": null,
+      "peak_position": 7,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Lovin On Me",
+      "artist": "Jack Harlow",
+      "this_week": 8,
+      "last_week": 7,
+      "peak_position": 1,
+      "weeks_on_chart": 21
+    },
+    {
+      "song": "We Can't Be Friends (Wait For Your Love)",
+      "artist": "Ariana Grande",
+      "this_week": 9,
+      "last_week": 10,
+      "peak_position": 1,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Type Shit",
+      "artist": "Future, Metro Boomin, Travis Scott & Playboi Carti",
+      "this_week": 10,
+      "last_week": 2,
+      "peak_position": 2,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Carnival",
+      "artist": "¥$: Ye & Ty Dolla $ign Featuring Rich The Kid & Playboi Carti",
+      "this_week": 11,
+      "last_week": 12,
+      "peak_position": 1,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "I Remember Everything",
+      "artist": "Zach Bryan Featuring Kacey Musgraves",
+      "this_week": 12,
+      "last_week": 15,
+      "peak_position": 1,
+      "weeks_on_chart": 32
+    },
+    {
+      "song": "Greedy",
+      "artist": "Tate McRae",
+      "this_week": 13,
+      "last_week": 17,
+      "peak_position": 3,
+      "weeks_on_chart": 29
+    },
+    {
+      "song": "Cruel Summer",
+      "artist": "Taylor Swift",
+      "this_week": 14,
+      "last_week": 16,
+      "peak_position": 1,
+      "weeks_on_chart": 48
+    },
+    {
+      "song": "Stick Season",
+      "artist": "Noah Kahan",
+      "this_week": 15,
+      "last_week": 18,
+      "peak_position": 10,
+      "weeks_on_chart": 27
+    },
+    {
+      "song": "Levii's Jeans",
+      "artist": "Beyonce & Post Malone",
+      "this_week": 16,
+      "last_week": null,
+      "peak_position": 16,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Snooze",
+      "artist": "SZA",
+      "this_week": 17,
+      "last_week": 23,
+      "peak_position": 2,
+      "weeks_on_chart": 68
+    },
+    {
+      "song": "Fast Car",
+      "artist": "Luke Combs",
+      "this_week": 18,
+      "last_week": 25,
+      "peak_position": 2,
+      "weeks_on_chart": 54
+    },
+    {
+      "song": "Saturn",
+      "artist": "SZA",
+      "this_week": 19,
+      "last_week": 26,
+      "peak_position": 6,
+      "weeks_on_chart": 6
+    },
+    {
+      "song": "Get It Sexyy",
+      "artist": "Sexyy Red",
+      "this_week": 20,
+      "last_week": 28,
+      "peak_position": 20,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "Agora Hills",
+      "artist": "Doja Cat",
+      "this_week": 21,
+      "last_week": 22,
+      "peak_position": 7,
+      "weeks_on_chart": 28
+    },
+    {
+      "song": "Water",
+      "artist": "Tyla",
+      "this_week": 22,
+      "last_week": 19,
+      "peak_position": 7,
+      "weeks_on_chart": 27
+    },
+    {
+      "song": "I Like The Way You Kiss Me",
+      "artist": "Artemas",
+      "this_week": 23,
+      "last_week": 70,
+      "peak_position": 23,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "End Of Beginning",
+      "artist": "Djo",
+      "this_week": 24,
+      "last_week": 21,
+      "peak_position": 11,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "Cinderella",
+      "artist": "Future, Metro Boomin & Travis Scott",
+      "this_week": 25,
+      "last_week": 6,
+      "peak_position": 6,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Bodyguard",
+      "artist": "Beyonce",
+      "this_week": 26,
+      "last_week": null,
+      "peak_position": 26,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Blackbiird",
+      "artist": "Beyonce, Tanner Adell, Brittney Spencer, Tiera Kennedy & Reyna Roberts",
+      "this_week": 27,
+      "last_week": null,
+      "peak_position": 27,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Redrum",
+      "artist": "21 Savage",
+      "this_week": 28,
+      "last_week": 30,
+      "peak_position": 5,
+      "weeks_on_chart": 12
+    },
+    {
+      "song": "Never Lose Me",
+      "artist": "Flo Milli",
+      "this_week": 29,
+      "last_week": 29,
+      "peak_position": 15,
+      "weeks_on_chart": 16
+    },
+    {
+      "song": "Ameriican Requiem",
+      "artist": "Beyonce",
+      "this_week": 30,
+      "last_week": null,
+      "peak_position": 30,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Spaghettii",
+      "artist": "Beyonce, Linda Martell & Shaboozey",
+      "this_week": 31,
+      "last_week": null,
+      "peak_position": 31,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Feather",
+      "artist": "Sabrina Carpenter",
+      "this_week": 32,
+      "last_week": 35,
+      "peak_position": 26,
+      "weeks_on_chart": 18
+    },
+    {
+      "song": "Man Made A Bar",
+      "artist": "Morgan Wallen Featuring Eric Church",
+      "this_week": 33,
+      "last_week": 37,
+      "peak_position": 15,
+      "weeks_on_chart": 28
+    },
+    {
+      "song": "Whatever She Wants",
+      "artist": "Bryson Tiller",
+      "this_week": 34,
+      "last_week": 32,
+      "peak_position": 19,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "Made For Me",
+      "artist": "Muni Long",
+      "this_week": 35,
+      "last_week": 34,
+      "peak_position": 20,
+      "weeks_on_chart": 12
+    },
+    {
+      "song": "Act II: Date @ 8",
+      "artist": "4Batz Featuring Drake",
+      "this_week": 36,
+      "last_week": 31,
+      "peak_position": 7,
+      "weeks_on_chart": 13
+    },
+    {
+      "song": "Daughter",
+      "artist": "Beyonce",
+      "this_week": 37,
+      "last_week": null,
+      "peak_position": 37,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "16 Carriages",
+      "artist": "Beyonce",
+      "this_week": 38,
+      "last_week": null,
+      "peak_position": 38,
+      "weeks_on_chart": 5
+    },
+    {
+      "song": "Ya Ya",
+      "artist": "Beyonce",
+      "this_week": 39,
+      "last_week": null,
+      "peak_position": 39,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Young Metro",
+      "artist": "Future, Metro Boomin & The Weeknd",
+      "this_week": 40,
+      "last_week": 9,
+      "peak_position": 9,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Obsessed",
+      "artist": "Olivia Rodrigo",
+      "this_week": 41,
+      "last_week": 14,
+      "peak_position": 14,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Protector",
+      "artist": "Beyonce & Rumi Carter",
+      "this_week": 42,
+      "last_week": null,
+      "peak_position": 42,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "We Don't Trust You",
+      "artist": "Future & Metro Boomin",
+      "this_week": 43,
+      "last_week": 8,
+      "peak_position": 8,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Tyrant",
+      "artist": "Beyonce & Dolly Parton",
+      "this_week": 44,
+      "last_week": null,
+      "peak_position": 44,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Houdini",
+      "artist": "Dua Lipa",
+      "this_week": 45,
+      "last_week": 42,
+      "peak_position": 11,
+      "weeks_on_chart": 21
+    },
+    {
+      "song": "Where The Wild Things Are",
+      "artist": "Luke Combs",
+      "this_week": 46,
+      "last_week": 50,
+      "peak_position": 26,
+      "weeks_on_chart": 20
+    },
+    {
+      "song": "Burn It Down",
+      "artist": "Parker McCollum",
+      "this_week": 47,
+      "last_week": 51,
+      "peak_position": 42,
+      "weeks_on_chart": 24
+    },
+    {
+      "song": "Selfish",
+      "artist": "Justin Timberlake",
+      "this_week": 48,
+      "last_week": 46,
+      "peak_position": 19,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "23",
+      "artist": "Chayce Beckham",
+      "this_week": 49,
+      "last_week": 48,
+      "peak_position": 45,
+      "weeks_on_chart": 14
+    },
+    {
+      "song": "Paint The Town Red",
+      "artist": "Doja Cat",
+      "this_week": 50,
+      "last_week": 43,
+      "peak_position": 1,
+      "weeks_on_chart": 35
+    },
+    {
+      "song": "Riiverdance",
+      "artist": "Beyonce",
+      "this_week": 51,
+      "last_week": null,
+      "peak_position": 51,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Alliigator Tears",
+      "artist": "Beyonce",
+      "this_week": 52,
+      "last_week": null,
+      "peak_position": 52,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "FE!N",
+      "artist": "Travis Scott Featuring Playboi Carti",
+      "this_week": 53,
+      "last_week": null,
+      "peak_position": 5,
+      "weeks_on_chart": 22
+    },
+    {
+      "song": "My Rose",
+      "artist": "Beyonce",
+      "this_week": 54,
+      "last_week": null,
+      "peak_position": 54,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Slow It Down",
+      "artist": "Benson Boone",
+      "this_week": 55,
+      "last_week": 45,
+      "peak_position": 45,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Yeah Glo!",
+      "artist": "GloRilla",
+      "this_week": 56,
+      "last_week": 49,
+      "peak_position": 35,
+      "weeks_on_chart": 8
+    },
+    {
+      "song": "Austin",
+      "artist": "Dasha",
+      "this_week": 57,
+      "last_week": 53,
+      "peak_position": 53,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Wild Ones",
+      "artist": "Jessie Murph & Jelly Roll",
+      "this_week": 58,
+      "last_week": 55,
+      "peak_position": 35,
+      "weeks_on_chart": 26
+    },
+    {
+      "song": "Just For Fun",
+      "artist": "Beyonce & Willie Jones",
+      "this_week": 59,
+      "last_week": null,
+      "peak_position": 59,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "II Hands II Heaven",
+      "artist": "Beyonce",
+      "this_week": 60,
+      "last_week": null,
+      "peak_position": 60,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Sweet * Honey * Buckiin'",
+      "artist": "Beyonce & Shaboozey",
+      "this_week": 61,
+      "last_week": null,
+      "peak_position": 61,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Enough (Miami)",
+      "artist": "Cardi B",
+      "this_week": 62,
+      "last_week": 44,
+      "peak_position": 9,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "Flamenco",
+      "artist": "Beyonce",
+      "this_week": 63,
+      "last_week": null,
+      "peak_position": 63,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Wildflowers And Wild Horses",
+      "artist": "Lainey Wilson",
+      "this_week": 64,
+      "last_week": 59,
+      "peak_position": 48,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "Desert Eagle",
+      "artist": "Beyonce",
+      "this_week": 65,
+      "last_week": null,
+      "peak_position": 65,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Get In With Me",
+      "artist": "BossMan Dlow",
+      "this_week": 66,
+      "last_week": 63,
+      "peak_position": 49,
+      "weeks_on_chart": 9
+    },
+    {
+      "song": "Exes",
+      "artist": "Tate McRae",
+      "this_week": 67,
+      "last_week": 57,
+      "peak_position": 34,
+      "weeks_on_chart": 20
+    },
+    {
+      "song": "Scared To Start",
+      "artist": "Michael Marcagi",
+      "this_week": 68,
+      "last_week": 65,
+      "peak_position": 56,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "La Diabla",
+      "artist": "Xavi",
+      "this_week": 69,
+      "last_week": 56,
+      "peak_position": 20,
+      "weeks_on_chart": 16
+    },
+    {
+      "song": "Oh Louisiana",
+      "artist": "Beyonce",
+      "this_week": 70,
+      "last_week": null,
+      "peak_position": 70,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Training Season",
+      "artist": "Dua Lipa",
+      "this_week": 71,
+      "last_week": 71,
+      "peak_position": 27,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "Ice Attack",
+      "artist": "Future & Metro Boomin",
+      "this_week": 72,
+      "last_week": 13,
+      "peak_position": 13,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Where It Ends",
+      "artist": "Bailey Zimmerman",
+      "this_week": 73,
+      "last_week": 79,
+      "peak_position": 32,
+      "weeks_on_chart": 14
+    },
+    {
+      "song": "Gata Only",
+      "artist": "FloyyMenor X Cris Mj",
+      "this_week": 74,
+      "last_week": 83,
+      "peak_position": 74,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "Everybody",
+      "artist": "Nicki Minaj Featuring Lil Uzi Vert",
+      "this_week": 75,
+      "last_week": 66,
+      "peak_position": 24,
+      "weeks_on_chart": 17
+    },
+    {
+      "song": "Soak City",
+      "artist": "310babii",
+      "this_week": 76,
+      "last_week": 64,
+      "peak_position": 53,
+      "weeks_on_chart": 16
+    },
+    {
+      "song": "Mmhmm",
+      "artist": "BigXthaPlug",
+      "this_week": 77,
+      "last_week": 76,
+      "peak_position": 65,
+      "weeks_on_chart": 15
+    },
+    {
+      "song": "Slimed In",
+      "artist": "Future & Metro Boomin",
+      "this_week": 78,
+      "last_week": 20,
+      "peak_position": 20,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Mamaw's House",
+      "artist": "Thomas Rhett Featuring Morgan Wallen",
+      "this_week": 79,
+      "last_week": 68,
+      "peak_position": 55,
+      "weeks_on_chart": 14
+    },
+    {
+      "song": "Praise Jah In The Moonlight",
+      "artist": "YG Marley",
+      "this_week": 80,
+      "last_week": 67,
+      "peak_position": 34,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "I Luv It",
+      "artist": "Camila Cabello & Playboi Carti",
+      "this_week": 81,
+      "last_week": null,
+      "peak_position": 81,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "The Boy Is Mine",
+      "artist": "Ariana Grande",
+      "this_week": 82,
+      "last_week": 60,
+      "peak_position": 16,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Corazon de Piedra",
+      "artist": "Xavi",
+      "this_week": 83,
+      "last_week": 73,
+      "peak_position": 73,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Bandit",
+      "artist": "Don Toliver",
+      "this_week": 84,
+      "last_week": 77,
+      "peak_position": 38,
+      "weeks_on_chart": 9
+    },
+    {
+      "song": "One Of The Girls",
+      "artist": "The Weeknd, Jennie & Lily Rose Depp",
+      "this_week": 85,
+      "last_week": 74,
+      "peak_position": 51,
+      "weeks_on_chart": 15
+    },
+    {
+      "song": "Yes, And?",
+      "artist": "Ariana Grande",
+      "this_week": 86,
+      "last_week": 61,
+      "peak_position": 1,
+      "weeks_on_chart": 12
+    },
+    {
+      "song": "Amen",
+      "artist": "Beyonce",
+      "this_week": 87,
+      "last_week": null,
+      "peak_position": 87,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "FTCU",
+      "artist": "Nicki Minaj",
+      "this_week": 88,
+      "last_week": 82,
+      "peak_position": 15,
+      "weeks_on_chart": 17
+    },
+    {
+      "song": "Wind Up Missin' You",
+      "artist": "Tucker Wetmore",
+      "this_week": 89,
+      "last_week": null,
+      "peak_position": 89,
+      "weeks_on_chart": 1
+    },
+    {
+      "song": "Spin You Around (1/24)",
+      "artist": "Morgan Wallen",
+      "this_week": 90,
+      "last_week": 91,
+      "peak_position": 24,
+      "weeks_on_chart": 10
+    },
+    {
+      "song": "Fried (She A Vibe)",
+      "artist": "Future & Metro Boomin",
+      "this_week": 91,
+      "last_week": 33,
+      "peak_position": 33,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Claustrophobic",
+      "artist": "Future & Metro Boomin",
+      "this_week": 92,
+      "last_week": 24,
+      "peak_position": 24,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Magic Don Juan (Princess Diana)",
+      "artist": "Future & Metro Boomin",
+      "this_week": 93,
+      "last_week": 27,
+      "peak_position": 27,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Tu Name",
+      "artist": "Fuerza Regida",
+      "this_week": 94,
+      "last_week": 81,
+      "peak_position": 66,
+      "weeks_on_chart": 7
+    },
+    {
+      "song": "Outskirts",
+      "artist": "Sam Hunt",
+      "this_week": 95,
+      "last_week": 100,
+      "peak_position": 92,
+      "weeks_on_chart": 4
+    },
+    {
+      "song": "Everyday Hustle",
+      "artist": "Future, Metro Boomin & Rick Ross",
+      "this_week": 96,
+      "last_week": 38,
+      "peak_position": 38,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Back Then Right Now",
+      "artist": "Tyler Hubbard",
+      "this_week": 97,
+      "last_week": null,
+      "peak_position": 83,
+      "weeks_on_chart": 3
+    },
+    {
+      "song": "La People II",
+      "artist": "Peso Pluma, Tito Double P & Joel de La P",
+      "this_week": 98,
+      "last_week": 69,
+      "peak_position": 69,
+      "weeks_on_chart": 2
+    },
+    {
+      "song": "Home",
+      "artist": "Good Neighbours",
+      "this_week": 99,
+      "last_week": 95,
+      "peak_position": 77,
+      "weeks_on_chart": 9
+    },
+    {
+      "song": "Tucson Too Late",
+      "artist": "Jordan Davis",
+      "this_week": 100,
+      "last_week": 97,
+      "peak_position": 81,
+      "weeks_on_chart": 5
+    }
+  ]
+}
