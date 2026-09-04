@@ -16,6 +16,7 @@ Table  ytm_hit(query, filter, rank, videoId, title, subtitle, ts)  -- UNIQUE(que
 """
 
 import argparse
+import csv
 import datetime as dt
 import json
 import os
@@ -25,6 +26,7 @@ import urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DB = os.path.join(HERE, "ytm_search.db")
+CSV = os.path.join(HERE, "ytm_search.csv")
 SEARCH_XHR = "/youtubei/v1/search"
 # YT Music blocks the stock Playwright UA ("browser not supported"); pose as desktop Chrome.
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -88,6 +90,21 @@ def scrape(page, query, filt):
     return hits_from_response(ri.value.json())
 
 
+COLS = ["query", "filter", "rank", "videoId", "title", "subtitle", "ts"]
+
+
+def dump_csv():
+    con = sqlite3.connect(DB)
+    rows = con.execute(f"SELECT {','.join(COLS)} FROM ytm_hit "
+                       "ORDER BY query, filter, rank").fetchall()
+    con.close()
+    with open(CSV, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(COLS)
+        w.writerows(rows)
+    print(f"wrote {CSV} ({len(rows)} rows)")
+
+
 def merge_cache(chart_path, force):
     """Fold the rank-0 Songs hit for each chart row into ../cache.json (+ unmatched.txt,
     matches.csv, matches.db). No browser -- reads the existing ytm_search.db."""
@@ -145,8 +162,11 @@ def main():
     ap.add_argument("--merge-cache", action="store_true",
                     help="no scraping: fold rank-0 Songs hits from ytm_search.db into cache.json (needs --from-chart)")
     ap.add_argument("--force", action="store_true", help="with --merge-cache: overwrite existing cache entries")
+    ap.add_argument("--dump-csv", action="store_true", help="no scraping: (re)write ytm_search.csv from ytm_search.db")
     args = ap.parse_args()
 
+    if args.dump_csv:
+        return dump_csv()
     if args.merge_cache:
         if not args.from_chart:
             sys.exit("--merge-cache needs --from-chart")
@@ -195,6 +215,7 @@ def main():
 
     con.close()
     print(f"\nwrote {DB}")
+    dump_csv()
 
 
 if __name__ == "__main__":

@@ -135,8 +135,9 @@ python3 ytm_search.py --videos --headful "some query"
 ```
 
 Writes SQLite `ytm_search.db`, table `ytm_hit(query, filter, rank, videoId, title,
-subtitle, ts)` with `UNIQUE(query, filter, videoId)`. Not wired into the scheduled
-job (CI has no browser).
+subtitle, ts)` with `UNIQUE(query, filter, videoId)`, plus a mirror `ytm_search.csv`
+(regenerate any time with `python3 ytm_search.py --dump-csv`). Both are gitignored —
+local scratch. Not wired into the scheduled job (CI has no browser).
 
 Fold the results back in (no browser needed for this step):
 

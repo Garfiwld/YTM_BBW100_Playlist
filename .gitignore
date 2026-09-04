@@ -3,3 +3,5 @@ oauth.json
 __pycache__/
 *.pyc
 .venv/
+ytm_search.csv
+ytm_search.db
