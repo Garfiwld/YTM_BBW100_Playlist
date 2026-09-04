@@ -37,6 +37,17 @@ assert sync.match("Some Song", "Some Artist") == ({"videoId": "vW", "audio": Non
 # cache_entry back-compat: bare string still works
 assert sync.cache_entry("abc") == {"videoId": "abc", "audio": None, "mv": None}
 
+# write_matches_csv: flat table, sorted by artist then song
+import tempfile as _tf, os as _os2
+sync.MATCHES_CSV = _os2.path.join(_tf.mkdtemp(), "m.csv")
+sync.write_matches_csv({
+    "Song Z|Artist B": {"videoId": "z", "audio": "z", "mv": None},
+    "Song A|Artist A": "a",
+})
+lines = open(sync.MATCHES_CSV).read().splitlines()
+assert lines[0] == "song,artist,videoId,audio,mv"
+assert lines[1] == "Song A,Artist A,a,," and lines[2] == "Song Z,Artist B,z,z,"
+
 sync.yt_search = lambda q: []
 assert sync.match("x", "y") == (None, False)
 

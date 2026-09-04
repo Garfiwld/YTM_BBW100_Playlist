@@ -39,13 +39,16 @@ State files (committed back by CI):
                      "last_archived_month": "YYYY-MM",
                      "archives": {"YYYY-MM-DD": playlist_id}}
   cache.json     -> {"song|artist": {"videoId": chosen, "audio": id|null, "mv": id|null}}
-                    resolved matches, reused across weeks (a bare id string is
-                    still accepted for back-compat)
+                    the working match store, reused across weeks (a bare id string
+                    is still accepted for back-compat)
+  matches.csv    -> song,artist,videoId,audio,mv  -- the same data as a flat table,
+                    regenerated from cache.json each run
   unmatched.txt  -> "DATE\tsong|artist\tvideoId"  weak matches (top hit's title
                     didn't fuzzy-match). Kept from cache like anything else;
                     RETRY_WEAK=1 re-searches them (costs search calls).
 """
 
+import csv
 import difflib
 import json
 import os
@@ -64,6 +67,7 @@ FUZZY_THRESHOLD = 0.8
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CHARTS_DIR = os.path.join(HERE, "charts")
+MATCHES_CSV = os.path.join(HERE, "matches.csv")
 CONFIG = os.path.join(HERE, "config.json")
 CACHE = os.path.join(HERE, "cache.json")
 UNMATCHED = os.path.join(HERE, "unmatched.txt")
@@ -273,6 +277,20 @@ def create_playlist(title, description, video_ids):
     return pid
 
 
+def write_matches_csv(cache):
+    """cache.json as a flat table: song,artist,videoId,audio,mv (sorted)."""
+    rows = []
+    for key, v in cache.items():
+        song, _, artist = key.partition("|")
+        e = cache_entry(v)
+        rows.append((song, artist, e["videoId"] or "", e["audio"] or "", e["mv"] or ""))
+    rows.sort(key=lambda r: (r[1].lower(), r[0].lower()))
+    with open(MATCHES_CSV, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["song", "artist", "videoId", "audio", "mv"])
+        w.writerows(rows)
+
+
 def write_charts_index():
     """charts/index.json -- sorted list of every chart date on disk, for the dashboard."""
     dates = sorted(f[:-5] for f in os.listdir(CHARTS_DIR) if f.endswith(".json") and f != "index.json")
@@ -329,6 +347,7 @@ def main():
     def persist():
         save_json(CONFIG, config)
         save_json(CACHE, cache)
+        write_matches_csv(cache)
         with open(UNMATCHED, "w") as f:
             f.write("\n".join(still_unmatched) + ("\n" if still_unmatched else ""))
         weak = {ln.split("\t")[1] for ln in still_unmatched}
