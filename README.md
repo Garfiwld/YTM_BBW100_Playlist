@@ -136,8 +136,18 @@ python3 ytm_search.py --videos --headful "some query"
 
 Writes SQLite `ytm_search.db`, table `ytm_hit(query, filter, rank, videoId, title,
 subtitle, ts)` with `UNIQUE(query, filter, videoId)`. Not wired into the scheduled
-job (CI has no browser) — run it locally, then copy the good ids into `cache.json`
-via the dashboard or by hand.
+job (CI has no browser).
+
+Fold the results back in (no browser needed for this step):
+
+```bash
+python3 ytm_search.py --merge-cache --from-chart charts/2026-09-05.json
+```
+
+For every chart row missing from `cache.json`, it takes that query's rank-0 *Songs*
+hit as `{videoId, audio, mv:null}`, runs the same `well_matched` check as `sync.py`
+(sub-0.8 picks go to `unmatched.txt` for review), then rewrites `matches.csv` /
+`matches.db`. `--force` overwrites existing entries.
 
 ## Review dashboard
 

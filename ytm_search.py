@@ -88,6 +88,52 @@ def scrape(page, query, filt):
     return hits_from_response(ri.value.json())
 
 
+def merge_cache(chart_path, force):
+    """Fold the rank-0 Songs hit for each chart row into ../cache.json (+ unmatched.txt,
+    matches.csv, matches.db). No browser -- reads the existing ytm_search.db."""
+    import sync
+
+    chart = json.load(open(chart_path))
+    date = chart["date"]
+    con = sqlite3.connect(DB)
+    top = {q: (v, t) for q, v, t in con.execute(
+        "SELECT query, videoId, title FROM ytm_hit WHERE filter='Songs' AND rank=0")}
+    con.close()
+
+    cache = sync.load_json(sync.CACHE, {})
+    weak_lines, added, weak_n, skipped = [], [], 0, 0
+    try:
+        weak_lines = [l for l in open(sync.UNMATCHED).read().splitlines() if l.strip()]
+    except FileNotFoundError:
+        pass
+    weak_keys = {l.split("\t")[1] for l in weak_lines}
+
+    for row in chart["data"]:
+        key = f"{row['song']}|{row['artist']}"
+        if key in cache and not force:
+            continue
+        hit = top.get(f"{row['song']} {row['artist']}")
+        if not hit:
+            skipped += 1
+            continue
+        vid, title = hit
+        cache[key] = {"videoId": vid, "audio": vid, "mv": None}
+        if sync.well_matched(title, row["song"]):
+            weak_keys.discard(key)
+            weak_lines = [l for l in weak_lines if l.split("\t")[1] != key]
+        elif key not in weak_keys:
+            weak_lines.append(f"{date}\t{key}\t{vid}")
+            weak_n += 1
+        added.append(key)
+
+    sync.save_json(sync.CACHE, cache)
+    with open(sync.UNMATCHED, "w") as f:
+        f.write("\n".join(weak_lines) + ("\n" if weak_lines else ""))
+    sync.write_matches_csv(cache)
+    sync.write_matches_db(cache)
+    print(f"merged {len(added)} into cache.json ({weak_n} flagged weak), {skipped} had no hit")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("queries", nargs="*")
@@ -96,7 +142,15 @@ def main():
     ap.add_argument("--videos", action="store_true", help="also click the Videos chip")
     ap.add_argument("--headful", action="store_true")
     ap.add_argument("--limit", type=int, default=3, help="store top N hits per (query,filter)")
+    ap.add_argument("--merge-cache", action="store_true",
+                    help="no scraping: fold rank-0 Songs hits from ytm_search.db into cache.json (needs --from-chart)")
+    ap.add_argument("--force", action="store_true", help="with --merge-cache: overwrite existing cache entries")
     args = ap.parse_args()
+
+    if args.merge_cache:
+        if not args.from_chart:
+            sys.exit("--merge-cache needs --from-chart")
+        return merge_cache(args.from_chart, args.force)
 
     queries = list(args.queries)
     if args.from_chart:
