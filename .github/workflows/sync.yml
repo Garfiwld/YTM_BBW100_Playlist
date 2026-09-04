@@ -1,0 +1,45 @@
+name: sync-hot-100
+
+on:
+  schedule:
+    - cron: "0 13 * * 3"   # Wed 13:00 UTC = 20:00 Asia/Bangkok
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-hot-100
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Write OAuth token
+        run: printf '%s' "$YTM_OAUTH_JSON" > oauth.json
+        env:
+          YTM_OAUTH_JSON: ${{ secrets.YTM_OAUTH_JSON }}
+
+      - name: Run sync
+        env:
+          YTM_CLIENT_ID: ${{ secrets.YTM_CLIENT_ID }}
+          YTM_CLIENT_SECRET: ${{ secrets.YTM_CLIENT_SECRET }}
+        run: python sync.py
+
+      - name: Commit state
+        run: |
+          rm -f oauth.json
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add config.json cache.json unmatched.txt
+          git diff --cached --quiet || git commit -m "sync $(date -u +%F)"
+          git push
